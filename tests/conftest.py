@@ -17,6 +17,14 @@ def repo_fixture():
     # Initialize the temporary directory as a Git repository
     subprocess.run(["git", "init"], cwd=temp_dir, check=True)
 
+    # Set the Git author and committer names and email addresses
+    subprocess.run(
+        ["git", "config", "user.name", "Test User"], cwd=temp_dir, check=True
+    )
+    subprocess.run(
+        ["git", "config", "user.email", "testuser@test.com"], cwd=temp_dir, check=True
+    )
+
     # Change the default branch name to "main"
     # subprocess.run(["git", "symbolic-ref", "HEAD", "refs/heads/main"], cwd=temp_dir, check=True)
     subprocess.run(["git", "branch", "-m", "master", "main"], cwd=temp_dir, check=True)
@@ -36,9 +44,6 @@ def repo_fixture():
 
     # Return the path to the temporary directory
     yield temp_dir
-
-    # Remove the temporary directory after the test has finished
-    # shutil.rmtree(temp_dir)
 
 
 @pytest.fixture
