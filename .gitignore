@@ -160,4 +160,5 @@ cython_debug/
 #.idea/
 
 requirements-frozen.txt
+!/tests/fixtures/files/requirements-frozen.txt
 /docker-run-*
