@@ -15,7 +15,7 @@ def repo_fixture():
     shutil.copytree(fixtures, temp_dir)
 
     # Initialize the temporary directory as a Git repository
-    subprocess.run(["git", "init"], cwd=temp_dir, check=True)
+    subprocess.run(["git", "init", temp_dir], cwd=temp_dir, check=True)
 
     # Set the Git author and committer names and email addresses
     subprocess.run(
