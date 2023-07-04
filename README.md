@@ -1,5 +1,7 @@
 # Dependency version checker for Python
 
+![Icon](./docs/icon.png?raw=true "Icon")
+
 ## Installation
 
 Clone this repository and run the following commands in the root of the project:
