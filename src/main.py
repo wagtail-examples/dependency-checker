@@ -23,9 +23,20 @@ from src.parsers.toml import TomlParser
     help='The name of the Dockerfile to use.',
     default='Dockerfile',
 )
-def start(repo_url, branch_name, docker_file_name):
+@click.option(
+    '--docker-file-location',
+    prompt='Dockerfile relative location (optional)',
+    help='The location of the Dockerfile to use relative to the root.',
+    default='./',
+)
+def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
     # clone the repository
-    repo_manager = RepositoryManager(repo_url, docker_file_name)
+    if not docker_file_location == './':
+        df = f"{docker_file_location}/{docker_file_name}"
+        repo_manager = RepositoryManager(repo_url, df)
+    else:
+        repo_manager = RepositoryManager(repo_url, docker_file_name)
+
     click.echo(f"Cloning repository {repo_url} ...")
     repo_manager.clone()
     click.secho(f"Cloned repository to {repo_manager.repo_dir}", fg='green')
