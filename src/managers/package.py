@@ -22,9 +22,6 @@ class Client:
 @dataclass
 class Package:
     json: dict
-    name: str = None
-    version: str = None
-    releases: dict = None
 
     def __post_init__(self):
         self.name = self.json["info"]["name"]
@@ -37,9 +34,12 @@ class Package:
     
     @property
     def latest_version(self):
+        return self.parse_versions_for_latest()
+    
+    def parse_versions_for_latest(self):
         # find the release with the latest upload_time
-        latest_date: datetime.datetime = None
-        latest_version: str = None
+        latest_date = None
+        latest_version = None
         for version, releases in self.releases.items():
             for release in releases:
                 upload_time = datetime.datetime.fromisoformat(release["upload_time"])

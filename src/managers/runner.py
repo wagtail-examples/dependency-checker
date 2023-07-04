@@ -1,3 +1,4 @@
+import pathlib
 import subprocess
 import shutil
 
@@ -6,6 +7,7 @@ class DockerManager:
         self.image = image
         self.poetry_version = poetry_version
         self.repo_dir = repo_dir
+        self.base_dir = pathlib.Path(__file__).parent.parent.parent
 
     @property
     def get_docker_image(self):
@@ -51,9 +53,5 @@ class DockerManager:
         except subprocess.CalledProcessError:
             pass
         subprocess.run(f"{cmd} '{args}'", shell=True, check=True, capture_output=True)
-        shutil.copy(
-            # requirements-frozen.txt will be copied to the local filesystem
-            self.repo_dir / "requirements-frozen.txt",
-            "requirements-frozen.txt",
-        )
+        shutil.move(self.repo_dir / "requirements-frozen.txt", self.base_dir / "requirements-frozen.txt")
         subprocess.run(["docker", "stop", "poetry-export"], check=True, capture_output=True)
