@@ -71,8 +71,8 @@ def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
     # it's used to lookup the package name and version specified in the pyproject.toml file
     toml = TomlParser(repo_manager.toml)
     click.echo(f"Processing pyproject.toml ...")
-    dependencies = sorted(toml.dependencies.keys())
-    dev_dependencies = sorted(toml.dev_dependencies.keys())
+    dependencies = sorted(toml.dependencies().keys())
+    dev_dependencies = sorted(toml.dev_dependencies().keys())
     
     report_production_dependencies = []
     report_dev_dependencies = []

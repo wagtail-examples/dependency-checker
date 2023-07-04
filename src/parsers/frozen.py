@@ -3,13 +3,10 @@ from dataclasses import dataclass
 
 @dataclass
 class FrozenParser:
-    file: str = None
     requirements = dict()
 
     def __post_init__(self) -> None:
-        if not self.file:
-            # TODO: allow override of the default file
-            self.file = pathlib.Path(__file__).parent.parent.parent / "requirements-frozen.txt"
+        self.file = pathlib.Path(__file__).parent.parent.parent / "requirements-frozen.txt"
 
 
     def parse_requirements(self) -> None:
@@ -17,6 +14,7 @@ class FrozenParser:
             return
     
         with open(self.file, "r") as f:
+            match = None
             lines = f.readlines()
             for line in lines:
                 if "@" in line:
