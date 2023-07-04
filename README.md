@@ -2,7 +2,7 @@
 
 ## Installation
 
-Clone this repository and run the following command in the root of the project:
+Clone this repository and run the following commands in the root of the project:
 
 ## Usage
 
