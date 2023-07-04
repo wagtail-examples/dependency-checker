@@ -23,14 +23,10 @@ poetry run start --help
 
 ## Limitations
 
-- Only works if the site is run using a Dockerfile in the root of the repository
-- Only works if the Dockerfile is named `Dockerfile`
 - Only works if the Dockerfile uses poetry to install dependencies
 
 ## TODO
 
-- Add support for Dockerfile in subdirectory
-- Add support for Dockerfile with different name
 - Add support for different dependency managers (requirements.txt, etc.)
 
 ## How it works
