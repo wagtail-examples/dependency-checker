@@ -17,9 +17,15 @@ from src.parsers.toml import TomlParser
     help='The name of the branch to checkout.',
     default='master',
 )
-def start(repo_url, branch_name):
+@click.option(
+    '--docker-file-name',
+    prompt='Dockerfile name (optional)',
+    help='The name of the Dockerfile to use.',
+    default='Dockerfile',
+)
+def start(repo_url, branch_name, docker_file_name):
     # clone the repository
-    repo_manager = RepositoryManager(repo_url)
+    repo_manager = RepositoryManager(repo_url, docker_file_name)
     click.echo(f"Cloning repository {repo_url} ...")
     repo_manager.clone()
     click.secho(f"Cloned repository to {repo_manager.repo_dir}", fg='green')

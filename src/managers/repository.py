@@ -5,7 +5,7 @@ import re
 
 
 class RepositoryManager:
-    def __init__(self, repo_url):
+    def __init__(self, repo_url, docker_file_name):
         self.repo_url = repo_url
         self.temp_dir = tempfile.TemporaryDirectory(
             # cloning to the root of the project so we can access the files
@@ -14,6 +14,7 @@ class RepositoryManager:
             prefix="docker-run-",
         )
         self.repo_dir: pathlib.Path
+        self.docker_file_name = docker_file_name
 
     def clone(self):
         self.repo_dir = pathlib.Path(self.temp_dir.name)
@@ -45,7 +46,7 @@ class RepositoryManager:
         return (self.repo_dir / "pyproject.toml").exists()
 
     def dockerfile_exists(self):
-        return (self.repo_dir / "Dockerfile").exists()
+        return (self.repo_dir / self.docker_file_name).exists()
 
     def remove_temp_dir(self):
         self.temp_dir.cleanup()
@@ -56,12 +57,15 @@ class RepositoryManager:
 
     @property
     def get_dockerfile(self):
-        with open(self.repo_dir / "Dockerfile") as f:
+        with open(self.repo_dir / self.docker_file_name) as f:
             return f.read()
 
     @property
     def docker_image(self):
-        return self.get_docker_image()
+        try:
+            return self.get_docker_image()
+        except Exception as e:
+            exit(f"Error getting docker image: {e}")
 
     @property
     def poetry_version(self):
