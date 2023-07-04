@@ -1,5 +1,9 @@
 # Dependency version checker for Python
 
+## Installation
+
+Clone this repository and run the following command in the root of the project:
+
 ## Usage
 
 ```bash
