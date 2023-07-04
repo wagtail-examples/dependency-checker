@@ -1,4 +1,4 @@
-# Dependency checker for Python
+# Dependency version checker for Python
 
 ## Usage
 
