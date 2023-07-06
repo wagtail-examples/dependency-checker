@@ -1,6 +1,7 @@
 import pathlib
-import subprocess
 import shutil
+import subprocess
+
 
 class DockerManager:
     def __init__(self, image, poetry_version=None, repo_dir=None):
@@ -38,11 +39,10 @@ class DockerManager:
         args = [
             "pip install -U pip",
             f"pip install poetry=={self.poetry_version}",
-            f"poetry export -f requirements.txt -o requirements-frozen.txt --without-hashes --dev",
+            "poetry export -f requirements.txt -o requirements-frozen.txt --without-hashes --dev",
         ]
 
         return " && ".join(args)
-    
 
     def run(self, cmd, args):
         """Run the dockerfile and extract the installed dependencies"""

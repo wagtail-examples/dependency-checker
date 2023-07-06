@@ -1,6 +1,7 @@
-from dataclasses import dataclass
-import requests
 import datetime
+from dataclasses import dataclass
+
+import requests
 
 
 class Client:
@@ -18,7 +19,6 @@ class Client:
             return response.status_code
 
 
-
 @dataclass
 class Package:
     json: dict
@@ -27,15 +27,15 @@ class Package:
         self.name = self.json["info"]["name"]
         self.version = self.json["info"]["version"]
         self.releases = self.json["releases"]
-    
+
     @property
     def current_version(self):
         return self.version
-    
+
     @property
     def latest_version(self):
         return self.parse_versions_for_latest()
-    
+
     def parse_versions_for_latest(self):
         # find the release with the latest upload_time
         latest_date = None
@@ -47,7 +47,6 @@ class Package:
                     latest_date = upload_time
                     latest_version = version
         return latest_version
-    
+
     def __str__(self):
         return f"{self.name} {self.version}"
-

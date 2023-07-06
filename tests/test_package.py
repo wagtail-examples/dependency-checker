@@ -54,6 +54,7 @@ def test_parse_versions_for_latest():
 
     assert latest_version == "2.26.0"
 
+
 def test_parse_versions_for_latest_with_release_candidate():
     # Testing for release candidates that are later than the latest normal release
     # because sometimes we use release candidates as normal releases

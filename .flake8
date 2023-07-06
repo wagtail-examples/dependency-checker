@@ -1,0 +1,4 @@
+[flake8]
+profile = black
+max-line-length = 120
+exclude = .git,__pycache__,docs/,htmlcov/,pytests/,venv/,.venv/,.coverage/
