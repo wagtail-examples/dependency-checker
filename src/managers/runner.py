@@ -39,7 +39,7 @@ class DockerManager:
         args = [
             "pip install -U pip",
             f"pip install poetry=={self.poetry_version}",
-            f"poetry export -f requirements.txt -o requirements-frozen.txt --without-hashes --dev",
+            "poetry export -f requirements.txt -o requirements-frozen.txt --without-hashes --dev",
         ]
 
         return " && ".join(args)

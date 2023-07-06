@@ -11,5 +11,6 @@ def test_docker_manager():
     )
     assert (
         docker.run_args
-        == "pip install -U pip && pip install poetry==1.0.0 && poetry export -f requirements.txt -o requirements-frozen.txt --without-hashes --dev"
+        == "pip install -U pip && pip install poetry==1.0.0 && poetry export \
+            -f requirements.txt -o requirements-frozen.txt --without-hashes --dev"
     )
