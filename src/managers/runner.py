@@ -43,7 +43,6 @@ class DockerManager:
         ]
 
         return " && ".join(args)
-    
 
     def run(self, cmd, args):
         """Run the dockerfile and extract the installed dependencies"""

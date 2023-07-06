@@ -24,9 +24,7 @@ class RepositoryManager:
                 check=True,
                 capture_output=True,
             )
-            subprocess.run(
-                ["git", "status"], cwd=self.repo_dir, check=True, capture_output=True
-            )
+            subprocess.run(["git", "status"], cwd=self.repo_dir, check=True, capture_output=True)
         except subprocess.CalledProcessError as e:
             exit(f"Error cloning repository {self.repo_url}: {e}")
 
