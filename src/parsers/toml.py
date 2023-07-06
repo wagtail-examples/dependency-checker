@@ -1,6 +1,8 @@
 import pathlib
-import tomli
 from dataclasses import dataclass
+
+import tomli
+
 
 @dataclass
 class TomlParser:

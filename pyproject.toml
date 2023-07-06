@@ -33,3 +33,7 @@ addopts = "-ra -q --cov=src --cov-report=term-missing --cov-report=html"
 testpaths = [
     "tests",
 ]
+
+[tool.isort]
+profile = "black"
+src_paths = ["isort", "test"]

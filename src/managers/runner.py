@@ -1,6 +1,7 @@
 import pathlib
-import subprocess
 import shutil
+import subprocess
+
 
 class DockerManager:
     def __init__(self, image, poetry_version=None, repo_dir=None):

@@ -1,6 +1,7 @@
 import pathlib
 from dataclasses import dataclass
 
+
 @dataclass
 class FrozenParser:
     requirements = dict()
