@@ -22,17 +22,19 @@ def test_parse_requirements(frozen_parser, tmp_path):
     assert frozen_parser.requirements == {"requests": "2.26.0", "numpy": "1.21.2"}
 
 
-def test_match_equals():
+def test_parse_requirements_no_file(frozen_parser):
+    assert frozen_parser.parse_requirements() is None
+
+
+def test_match_equals(frozen_parser):
     # Test that match_equals() correctly extracts the package name and version from a line with ==
-    frozen_parser = FrozenParser()
     package_name, package_version = frozen_parser.match_equals("requests==2.26.0")
     assert package_name == "requests"
     assert package_version == "2.26.0"
 
 
-def test_match_repo():
+def test_match_repo(frozen_parser):
     # Test that match_repo() correctly extracts the package name and repo URL from a line with @
-    frozen_parser = FrozenParser()
     package_name, repo_url = frozen_parser.match_repo("requests@git+https://github.com/psf/requests.git")
     assert package_name == "requests"
     assert repo_url == "git+https://github.com/psf/requests.git"

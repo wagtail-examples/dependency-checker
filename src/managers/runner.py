@@ -46,12 +46,6 @@ class DockerManager:
 
     def run(self, cmd, args):
         """Run the dockerfile and extract the installed dependencies"""
-        # run the args in the docker container
-        try:
-            # remove the docker container if it exists, sometimes it gets left behind after an error
-            subprocess.run(["docker", "rm", "poetry-export"], check=True, capture_output=True)
-        except subprocess.CalledProcessError:
-            pass
         subprocess.run(f"{cmd} '{args}'", shell=True, check=True, capture_output=True)
         shutil.move(self.repo_dir / "requirements-frozen.txt", self.base_dir / "requirements-frozen.txt")
         subprocess.run(["docker", "stop", "poetry-export"], check=True, capture_output=True)
