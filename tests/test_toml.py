@@ -6,14 +6,16 @@ from src.parsers.toml import TomlParser
 def toml_parser(tmp_path):
     # Create a temporary pyproject.toml file with some example dependencies
     pyproject_file = tmp_path / "pyproject.toml"
-    pyproject_file.write_text("[tool.poetry]\n"
-                              "name = \"example\"\n"
-                              "version = \"0.1.0\"\n"
-                              "[tool.poetry.dependencies]\n"
-                              "requests = \"^2.26.0\"\n"
-                              "numpy = \"^1.21.2\"\n"
-                              "[tool.poetry.dev-dependencies]\n"
-                              "pytest = \"^6.2.4\"\n")
+    pyproject_file.write_text(
+        "[tool.poetry]\n"
+        'name = "example"\n'
+        'version = "0.1.0"\n'
+        "[tool.poetry.dependencies]\n"
+        'requests = "^2.26.0"\n'
+        'numpy = "^1.21.2"\n'
+        "[tool.poetry.dev-dependencies]\n"
+        'pytest = "^6.2.4"\n'
+    )
 
     # Create a TomlParser instance with the temporary file
     return TomlParser(file=pyproject_file)
