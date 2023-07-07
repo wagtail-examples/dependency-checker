@@ -40,26 +40,26 @@ def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
 
     click.echo(f"Cloning repository {repo_url} ...")
     repo_manager.clone()
-    click.secho(f"Cloned repository to {repo_manager.repo_dir}", fg="green")
+    click.secho(f"Cloned repository to {repo_manager.repo_dir}")
 
     # switch to an alternative branch if specified
     # if branch_name != 'main':
     repo_manager.branch(branch_name)
-    click.secho(f"Checked out branch {branch_name}", fg="green")
+    click.secho(f"Checked out branch {branch_name}")
 
     # get the docker image from the Dockerfile
     docker_image = repo_manager.docker_image
-    click.secho(f"Found Docker image {docker_image}", fg="yellow")
+    click.secho(f"Found Docker image {docker_image}")
 
     # get the poetry version from the Dockerfile
     poetry_version = repo_manager.poetry_version
-    click.secho(f"Found Poetry version {poetry_version}", fg="yellow")
+    click.secho(f"Found Poetry version {poetry_version}")
 
     # run the docker image
     docker = DockerManager(docker_image, poetry_version, repo_manager.repo_dir)
     click.echo("Running the docker image. This may take some time ...")
     docker.run(docker.run_cmd, docker.run_args)
-    click.secho("Generated requirements-frozen.txt", fg="green")
+    click.secho("Generated requirements-frozen.txt")
 
     # process the requirements-frozen.txt file as a FrozenParser object
     # it's used to lookup the package name and version installed in the docker image
@@ -80,6 +80,11 @@ def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
     messages = []
 
     client = Client("https://pypi.org/pypi")
+
+    click.echo("\n")
+    click.secho("RED: Manual check should be carried out", fg="bright_red")
+    click.secho("YELLOW: The latest available version is not installed", fg="bright_yellow")
+    click.secho("GREEN: Using the latest version available is installed", fg="bright_green")
 
     # production dependencies
     click.echo("\n")
