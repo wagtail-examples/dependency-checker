@@ -15,6 +15,8 @@ def repo(tmpdir):
     t.join("Dockerfile").write(dockerfile_content)
 
     os.chdir(t)
+    subprocess.run(["git", "config", "--global", "user.email", "user@example.com"], check=True, capture_output=True)
+    subprocess.run(["git", "config", "--global", "user.name", "user"], check=True, capture_output=True)
     subprocess.run(["git", "init"], check=True, capture_output=True)
     subprocess.run(["git", "add", "."], check=True, capture_output=True)
     subprocess.run(["git", "commit", "-m", "initial commit"], check=True, capture_output=True)
