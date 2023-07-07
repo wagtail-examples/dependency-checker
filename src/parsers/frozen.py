@@ -6,37 +6,36 @@ from dataclasses import dataclass
 class FrozenParser:
     requirements = dict()
 
-    def __post_init__(self) -> None:
+    def __post_init__(self):
         self.file = pathlib.Path(__file__).parent.parent.parent / "requirements-frozen.txt"
 
-    def parse_requirements(self) -> None:
+    def parse_requirements(self):
         if not self.file.is_file():
             return
 
         with open(self.file, "r") as f:
-            match = None
-            lines = f.readlines()
-            for line in lines:
+            for line in f.readlines():
+                if "==" in line:
+                    match = self.match_equals(line)
+                    self.requirements[match[0]] = match[1]
+                    continue
+
                 if "@" in line:
                     match = self.match_repo(line)
-                elif "==" in line:
-                    match = self.match_equals(line)
-                if match:
                     self.requirements[match[0]] = match[1]
+                    continue
 
     def match_equals(self, package_name):
         parts = package_name.split("==")
-        if len(parts) == 2:
-            package_name = parts[0].strip()
-            package_version = parts[1].split(";")[0].strip()
-            return package_name, package_version
+        package_name = parts[0].strip()
+        package_version = parts[1].split(";")[0].strip()
+        return package_name, package_version
 
     def match_repo(self, line):
         parts = line.split("@", 1)
-        if len(parts) == 2:
-            package_name = parts[0].strip()
-            repo_url = parts[1].split(";")[0].strip()
-            return package_name, repo_url
+        package_name = parts[0].strip()
+        repo_url = parts[1].split(";")[0].strip()
+        return package_name, repo_url
 
-    def clean_up(self):
+    def clean_up_frozen(self):
         self.file.unlink()

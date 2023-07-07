@@ -4,11 +4,14 @@ import subprocess
 
 
 class DockerManager:
-    def __init__(self, image, poetry_version=None, repo_dir=None):
+    def __init__(self, image, poetry_version=None, repo_dir=None, docker_run_name="poetry-export"):
         self.image = image
         self.poetry_version = poetry_version
         self.repo_dir = repo_dir
         self.base_dir = pathlib.Path(__file__).parent.parent.parent
+        self.docker_run_name = docker_run_name
+        # if the last run failed, the docker container may still exist
+        self.cleanup_docker()
 
     @property
     def get_docker_image(self):
@@ -22,7 +25,7 @@ class DockerManager:
             "docker",
             "run",
             "--name",
-            "poetry-export",
+            f"{self.docker_run_name}",
             "-it",
             "--volume",
             f"{self.repo_dir}:/app",
@@ -46,12 +49,13 @@ class DockerManager:
 
     def run(self, cmd, args):
         """Run the dockerfile and extract the installed dependencies"""
-        # run the args in the docker container
-        try:
-            # remove the docker container if it exists, sometimes it gets left behind after an error
-            subprocess.run(["docker", "rm", "poetry-export"], check=True, capture_output=True)
-        except subprocess.CalledProcessError:
-            pass
         subprocess.run(f"{cmd} '{args}'", shell=True, check=True, capture_output=True)
         shutil.move(self.repo_dir / "requirements-frozen.txt", self.base_dir / "requirements-frozen.txt")
-        subprocess.run(["docker", "stop", "poetry-export"], check=True, capture_output=True)
+        subprocess.run(["docker", "stop", self.docker_run_name], check=True, capture_output=True)
+
+    def cleanup_docker(self):
+        try:
+            # remove the docker container if it exists, sometimes it gets left behind after an error
+            subprocess.run(["docker", "rm", self.docker_run_name], check=True, capture_output=True)
+        except subprocess.CalledProcessError:
+            pass

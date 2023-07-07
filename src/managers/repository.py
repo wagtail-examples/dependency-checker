@@ -9,11 +9,9 @@ class RepositoryManager:
         self.repo_url = repo_url
         self.temp_dir = tempfile.TemporaryDirectory(
             # cloning to the root of the project so we can access the files
-            # for a short time it need be.
             dir=pathlib.Path(__file__).parent.parent.parent,
             prefix="docker-run-",
         )
-        self.repo_dir: pathlib.Path
         self.docker_file_name = docker_file_name
 
     def clone(self):

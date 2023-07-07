@@ -23,4 +23,6 @@ jobs:
 
     - name: Run pytest
       run: |
-        pytest
+        # Run all tests except the ones that are marked as --deselect
+        # This is because they can only be run locally till I find a way around that
+        pytest --deselect tests/test_main --deselect tests/test_repository
