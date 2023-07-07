@@ -49,7 +49,7 @@ def test_clean_up(frozen_parser, tmp_path):
     frozen_parser.file = requirements_file
 
     # Call clean_up() to delete the temporary file
-    frozen_parser.clean_up()
+    frozen_parser.clean_up_frozen()
 
     # Check that the temporary file no longer exists
     assert not requirements_file.exists()

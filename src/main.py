@@ -154,4 +154,5 @@ def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
             click.secho(f"{message}", fg="bright_red")
 
     # cleanup
-    frozen.clean_up()
+    frozen.clean_up_frozen()
+    docker.cleanup_docker()

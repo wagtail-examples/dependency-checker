@@ -37,5 +37,5 @@ class FrozenParser:
         repo_url = parts[1].split(";")[0].strip()
         return package_name, repo_url
 
-    def clean_up(self):
+    def clean_up_frozen(self):
         self.file.unlink()
