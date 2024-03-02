@@ -15,9 +15,6 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python: ["3.9"]
 
     steps:
       #----------------------------------------------
@@ -25,11 +22,11 @@ jobs:
       #----------------------------------------------
       - name: Check out repository
         uses: actions/checkout@v4
-      - name: Set up python ${{ matrix.python-version }}
+      - name: Set up python
         id: setup-python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.9
       #----------------------------------------------
       #  -----  install & configure poetry  -----
       #----------------------------------------------
@@ -59,12 +56,8 @@ jobs:
       - name: Install library
         run: poetry install --no-interaction
       #----------------------------------------------
-      #    add matrix specifics and run test suite
+      # run test suite
       #----------------------------------------------
-      # - name: Install django ${{ matrix.django-version }}
-      #   run: |
-      #     source .venv/bin/activate
-      #     pip install "Django==${{ matrix.django-version }}"
       - name: Run tests
         run: |
           source .venv/bin/activate
