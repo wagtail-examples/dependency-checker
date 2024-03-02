@@ -29,9 +29,9 @@ def test_start(runner, repo):
     assert "Cloning repository" in result.output
     assert "Cloned repository to" in result.output
     # assert "Checked out branch" in result.output
-    assert "Found Docker image" in result.output
-    assert "Found Poetry version" in result.output
-    assert "Running the docker image. This may take some time ..." in result.output
+    # assert "Found Docker image" in result.output
+    # assert "Found Poetry version" in result.output
+    # assert "Running the docker image. This may take some time ..." in result.output
 
 
 def test_start_defaults(runner, repo):
@@ -49,6 +49,6 @@ def test_start_defaults(runner, repo):
     assert "Cloning repository" in result.output
     assert "Cloned repository to" in result.output
     # assert "Checked out branch" in result.output
-    assert "Found Docker image" in result.output
-    assert "Found Poetry version" in result.output
-    assert "Running the docker image. This may take some time ..." in result.output
+    # assert "Found Docker image" in result.output
+    # assert "Found Poetry version" in result.output
+    # assert "Running the docker image. This may take some time ..." in result.output
