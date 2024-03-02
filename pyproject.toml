@@ -29,6 +29,8 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 start = "src.main:start"
 
+# plugin may be required to export requirements in the future
+
 [tool.pytest.ini_options]
 addopts = "-ra -q --cov=src --cov-report=term-missing --cov-report=html"
 testpaths = [

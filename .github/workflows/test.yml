@@ -2,6 +2,10 @@ name: Python Tests
 
 on: [pull_request]
 
+#  future update use the better version of the python action
+# that uses poetry to manage dependencies
+# https://github.com/nickmoreton/wagtail-devtools-cli/blob/main/.github/workflows/test.yaml
+
 jobs:
   test:
     name: Run Tests
