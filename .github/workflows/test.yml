@@ -1,32 +1,71 @@
-name: Python Tests
+name: dependency-check
 
-on: [pull_request]
+on:
+  pull_request:
+    branches:
+      - main
 
-#  future update use the better version of the python action
-# that uses poetry to manage dependencies
-# https://github.com/nickmoreton/wagtail-devtools-cli/blob/main/.github/workflows/test.yaml
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
 
 jobs:
   test:
-    name: Run Tests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.9"]
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.x
-
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements-test.txt
-
-    - name: Run pytest
-      run: |
-        # Run all tests except the ones that are marked as --deselect
-        # This is because they can only be run locally till I find a way around that
-        pytest --deselect tests/test_main --deselect tests/test_repository
+      #----------------------------------------------
+      #       check-out repo and set-up python
+      #----------------------------------------------
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up python ${{ matrix.python-version }}
+        id: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      #----------------------------------------------
+      #  -----  install & configure poetry  -----
+      #----------------------------------------------
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      #----------------------------------------------
+      #       load cached venv if cache exists
+      #----------------------------------------------
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      #----------------------------------------------
+      # install dependencies if cache does not exist
+      #----------------------------------------------
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+      #----------------------------------------------
+      # install your root project, if required
+      #----------------------------------------------
+      - name: Install library
+        run: poetry install --no-interaction
+      #----------------------------------------------
+      #    add matrix specifics and run test suite
+      #----------------------------------------------
+      # - name: Install django ${{ matrix.django-version }}
+      #   run: |
+      #     source .venv/bin/activate
+      #     pip install "Django==${{ matrix.django-version }}"
+      - name: Run tests
+        run: |
+          source .venv/bin/activate
+          pytest tests/ --cov=./
