@@ -22,7 +22,7 @@ def repo(tmpdir):
     subprocess.run(["git", "init"], check=True, capture_output=True)
     subprocess.run(["git", "add", "."], check=True, capture_output=True)
     subprocess.run(["git", "commit", "-m", "initial commit"], check=True, capture_output=True)
-    subprocess.run(["git", "branch", "master"], check=True, capture_output=True)
+    subprocess.run(["git", "checkout", "master"], check=True, capture_output=True)
     subprocess.run(["git", "checkout", "-b", "test"], check=True, capture_output=True)
     path = pathlib.Path(t)
     return path
