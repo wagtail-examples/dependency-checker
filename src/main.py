@@ -1,9 +1,12 @@
 import click
+from rich.console import Console
 from src.managers.package import Client, Package
 from src.managers.repository import RepositoryManager
 from src.managers.runner import DockerManager
 from src.parsers.frozen import FrozenParser
 from src.parsers.toml import TomlParser
+
+console = Console()
 
 
 @click.command()
@@ -38,40 +41,40 @@ def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
     else:
         repo_manager = RepositoryManager(repo_url, docker_file_name)
 
-    click.echo(f"Cloning repository {repo_url} ...")
+    console.print(f"Cloning repository {repo_url} ...")
     repo_manager.clone()
-    click.secho(f"Cloned repository to {repo_manager.repo_dir}")
+    console.print(f"Cloned repository to {repo_manager.repo_dir}")
 
     # switch to an alternative branch if specified
     # if branch_name != 'main':
     repo_manager.branch(branch_name)
-    click.secho(f"Checked out branch {branch_name}")
+    console.print(f"Checked out branch {branch_name}")
 
     # get the docker image from the Dockerfile
     docker_image = repo_manager.docker_image
-    click.secho(f"Found Docker image {docker_image}")
+    console.print(f"Found Docker image {docker_image}")
 
     # get the poetry version from the Dockerfile
     poetry_version = repo_manager.poetry_version
-    click.secho(f"Found Poetry version {poetry_version}")
+    console.print(f"Found Poetry version {poetry_version}")
 
     # run the docker image
     docker = DockerManager(docker_image, poetry_version, repo_manager.repo_dir)
-    click.echo("Running the docker image. This may take some time ...")
+    console.print("Running the docker image. This may take some time ...")
     docker.run(docker.run_cmd, docker.run_args)
-    click.secho("Generated requirements-frozen.txt")
+    console.print("Generated requirements-frozen.txt")
 
     # process the requirements-frozen.txt file as a FrozenParser object
     # it's used to lookup the package name and version installed in the docker image
     frozen = FrozenParser()
-    click.echo("Processing frozen requirements ...")
+    console.print("Processing frozen requirements ...")
     frozen.parse_requirements()
     frozen_dependencies = frozen.requirements
 
     # process the pyproject.toml file as a TomlParser object
     # it's used to lookup the package name and version specified in the pyproject.toml file
     toml = TomlParser(repo_manager.toml)
-    click.echo("Processing pyproject.toml ...")
+    console.print("Processing pyproject.toml ...")
     dependencies = sorted(toml.dependencies().keys())
     dev_dependencies = sorted(toml.dev_dependencies().keys())
 
@@ -81,14 +84,15 @@ def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
 
     client = Client("https://pypi.org/pypi")
 
-    click.echo("\n")
-    click.secho("RED: Manual check should be carried out", fg="bright_red")
-    click.secho("YELLOW: The latest available version is not installed", fg="bright_yellow")
-    click.secho("GREEN: Using the latest version available is installed", fg="bright_green")
+    console.print("\n")
+    console.print("Report ...", style="bold bright_white")
+    console.print("RED: Manual check should be carried out", style="bright_red")
+    console.print("YELLOW: The latest available version is not installed", style="bright_yellow")
+    console.print("GREEN: Using the latest version available is installed", style="bright_green")
 
     # production dependencies
-    click.echo("\n")
-    click.secho("Production dependencies ...", **{"underline": True, "fg": "bright_white"})
+    console.print("\n")
+    console.print("Production dependencies ...", style="underline bright_white")
     for dependency in dependencies:
         c = client.get(dependency)
         if isinstance(c, int):
@@ -119,11 +123,11 @@ def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
 
     if report_production_dependencies:
         for item in report_production_dependencies:
-            click.secho(item[0], fg=item[1])
+            console.print(item[0], style=f"{item[1]}")
 
     # development dependencies
-    click.echo("\n")
-    click.secho("Development dependencies ...", **{"underline": True, "fg": "bright_white"})
+    console.print("\n")
+    console.print("Development dependencies ...", style="underline bright_white")
     for dependency in dev_dependencies:
         c = client.get(dependency)
         if isinstance(c, int):
@@ -150,13 +154,13 @@ def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
 
     if report_dev_dependencies:
         for item in report_dev_dependencies:
-            click.secho(item[0], fg=item[1])
+            console.print(item[0], style=item[1])
 
     if len(messages) > 0:
-        click.secho("\n")
-        click.secho("Manual check required", **{"underline": True, "fg": "bright_white"})
+        console.print("\n")
+        console.print("Manual check required", style="underline bright_white")
         for message in messages:
-            click.secho(f"{message}", fg="bright_red")
+            console.print(f"{message}", style="bright_red")
 
     # cleanup
     frozen.clean_up_frozen()
