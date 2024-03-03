@@ -65,8 +65,16 @@ class RepositoryManager:
 
     @property
     def get_dockerfile(self):
-        with open(self.repo_dir / self.docker_file_name) as f:
-            return f.read()
+        try:
+            with open(self.repo_dir / self.docker_file_name) as f:
+                return f.read()
+        except FileNotFoundError:
+            console = Console()
+            console.print(
+                f"Error reading Dockerfile: {self.docker_file_name} not found in repository {self.repo_url}",
+                style="red1",
+            )
+            exit()
 
     @property
     def docker_image(self):

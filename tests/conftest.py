@@ -4,6 +4,7 @@ import subprocess
 
 import pytest
 from src.managers.repository import RepositoryManager
+from src.parsers.toml import TomlParser
 
 
 @pytest.fixture()
@@ -38,3 +39,51 @@ def repo(tmpdir):
 @pytest.fixture
 def repository_manager(repo):
     return RepositoryManager(repo_url=repo, docker_file_name="Dockerfile")
+
+
+@pytest.fixture
+def parsed_toml_dev(tmp_path):
+    # Create a temporary pyproject.toml file with some example dependencies
+    pyproject_file = tmp_path / "pyproject.toml"
+    pyproject_file.write_text(
+        "[tool.poetry]\n"
+        'name = "example"\n'
+        'version = "0.1.0"\n'
+        "[tool.poetry.dependencies]\n"
+        'requests = "^2.26.0"\n'
+        'numpy = "^1.21.2"\n'
+        "[tool.poetry.dev-dependencies]\n"
+        'pytest = "^6.2.4"\n'
+    )
+
+    # Create a TomlParser instance with the temporary file
+    return TomlParser(file=pyproject_file)
+
+
+@pytest.fixture
+def parsed_toml_group_dev(tmp_path):
+    # Create a temporary pyproject.toml file with some example dependencies
+    pyproject_file = tmp_path / "pyproject.toml"
+    pyproject_file.write_text(
+        "[tool.poetry]\n"
+        'name = "example"\n'
+        'version = "0.1.0"\n'
+        "[tool.poetry.dependencies]\n"
+        'requests = "^2.26.0"\n'
+        'numpy = "^1.21.2"\n'
+        "[tool.poetry.group.dev.dependencies]\n"
+        'pytest = "^6.2.4"\n'
+    )
+
+    # Create a TomlParser instance with the temporary file
+    return TomlParser(file=pyproject_file)
+
+
+@pytest.fixture
+def parsed_toml_no_dependencies(tmp_path):
+    # Create a temporary pyproject.toml file with no dependencies
+    pyproject_file = tmp_path / "pyproject.toml"
+    pyproject_file.write_text("[tool.poetry]\n" 'name = "example"\n' 'version = "0.1.0"\n')
+
+    # Create a TomlParser instance with the temporary file
+    return TomlParser(file=pyproject_file)
