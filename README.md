@@ -47,4 +47,4 @@ poetry run start --help
 
 e.g. Console output
 
-![Console ouput](./docs/console.png?raw=true "Console output")
+![Console ouput](./docs/console.jpg?raw=true "Console output")
