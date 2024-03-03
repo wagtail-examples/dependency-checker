@@ -1,5 +1,7 @@
 import click
+from rich import box
 from rich.console import Console
+from rich.table import Table
 from src.managers.package import Client, Package
 from src.managers.repository import RepositoryManager
 from src.managers.runner import DockerManager
@@ -34,6 +36,15 @@ console = Console()
     default="./",
 )
 def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
+    console.print("\n")
+    table = Table(title="Repository Information", box=box.MARKDOWN, show_lines=True)
+    table.add_column("Repository URL", style="bright_white")
+    table.add_column("Branch Name", style="bright_white")
+    table.add_column("Dockerfile", style="bright_white")
+    table.add_column("Dockerfile Location", style="bright_white")
+    table.add_row(repo_url, branch_name, docker_file_name, docker_file_location)
+    console.print(table)
+
     # clone the repository
     if not docker_file_location == "./":
         df = f"{docker_file_location}/{docker_file_name}"
@@ -41,93 +52,101 @@ def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
     else:
         repo_manager = RepositoryManager(repo_url, docker_file_name)
 
-    console.print(f"Cloning repository {repo_url} ...")
+    client = Client("https://pypi.org/pypi")
+
     repo_manager.clone()
-    console.print(f"Cloned repository to {repo_manager.repo_dir}")
-
     # switch to an alternative branch if specified
-    # if branch_name != 'main':
     repo_manager.branch(branch_name)
-    console.print(f"Checked out branch {branch_name}")
-
     # get the docker image from the Dockerfile
     docker_image = repo_manager.docker_image
-    console.print(f"Found Docker image {docker_image}")
-
     # get the poetry version from the Dockerfile
     poetry_version = repo_manager.poetry_version
-    console.print(f"Found Poetry version {poetry_version}")
+    poetry_latest_version = client.get("poetry").json()["info"]["version"]
+
+    console.print("\n")
+    table = Table(title="Docker Information", box=box.MARKDOWN, show_lines=True)
+    table.add_column("Docker Image", style="bright_white")
+    table.add_column("Poetry Version", style="bright_white")
+    table.add_column("Latest Poetry Version", style="bright_white")
+    table.add_row(docker_image, poetry_version, poetry_latest_version)
+    console.print(table)
 
     # run the docker image
     docker = DockerManager(docker_image, poetry_version, repo_manager.repo_dir)
-    console.print("Running the docker image. This may take some time ...")
+    console.print("Running the docker image. This may take some time ...", style="yellow1")
     docker.run(docker.run_cmd, docker.run_args)
-    console.print("Generated requirements-frozen.txt")
 
     # process the requirements-frozen.txt file as a FrozenParser object
     # it's used to lookup the package name and version installed in the docker image
     frozen = FrozenParser()
-    console.print("Processing frozen requirements ...")
     frozen.parse_requirements()
     frozen_dependencies = frozen.requirements
 
     # process the pyproject.toml file as a TomlParser object
     # it's used to lookup the package name and version specified in the pyproject.toml file
     toml = TomlParser(repo_manager.toml)
-    console.print("Processing pyproject.toml ...")
     dependencies = sorted(toml.dependencies().keys())
     dev_dependencies = sorted(toml.dev_dependencies().keys())
 
-    report_production_dependencies = []
-    report_dev_dependencies = []
     messages = []
 
-    client = Client("https://pypi.org/pypi")
-
-    console.print("\n")
-    console.print("Report ...", style="bold bright_white")
-    console.print("RED: Manual check should be carried out", style="bright_red")
-    console.print("YELLOW: The latest available version is not installed", style="bright_yellow")
-    console.print("GREEN: Using the latest version available is installed", style="bright_green")
+    production_packages = []
+    development_packages = []
 
     # production dependencies
     console.print("\n")
-    console.print("Production dependencies ...", style="underline bright_white")
+    table = Table(title="Production Dependencies", box=box.MARKDOWN, show_lines=True)
+    table.add_column("Package", style="bright_white")
+    table.add_column("Installed Version", style="bright_white")
+    table.add_column("Latest Version", style="bright_white")
+    table.add_column("Status", style="bright_white")
+
     for dependency in dependencies:
         c = client.get(dependency)
         if isinstance(c, int):
             # deals with cases such as package names with [extras] in them
             messages.append(f"{dependency}")
             continue
-
         package = Package(c.json())
+
+        production_packages.append(package)
+
+    for package in production_packages:
+        name = package.name
         latest_version = package.latest_version
-        frozen_version = frozen_dependencies.get(dependency.lower())
-
-        if frozen_version is None:
-            # deals with cases such as package names that don't exist such as "python"
-            messages.append(f"{dependency}")
-            continue
-
-        if frozen_version != latest_version:
-            if "git+https://" not in frozen_version:
-                report_production_dependencies.append(
-                    (f"{dependency} {frozen_version} -> {latest_version}", "bright_yellow")
-                )
+        frozen_version = frozen_dependencies.get(name.lower())
+        if frozen_version and frozen_version != latest_version:
+            if "git+https://" in frozen_version:
+                status = "Check"
+                style = "red1"
             else:
-                report_production_dependencies.append(
-                    (f"{dependency} {frozen_version} -> {latest_version}", "bright_red")
-                )
+                status = "Outdated"
+                style = "yellow1"
+        elif not frozen_version:
+            status = "Check"
+            style = "cyan1"
+            frozen_version = "Unable to determine version"
         else:
-            report_production_dependencies.append((f"{dependency} == {frozen_version}", "bright_green"))
+            status = "OK"
+            style = "green3"
 
-    if report_production_dependencies:
-        for item in report_production_dependencies:
-            console.print(item[0], style=f"{item[1]}")
+        if "git+https://" in frozen_version:
+            frozen_version = frozen_version.replace("git+https://", "")
+            frozen_version = f"{frozen_version.split('@')[0]} TAG {frozen_version.split('@')[1]}"
+
+        table.add_row(name, frozen_version, latest_version, status, style=style)
+
+    console.print(table)
 
     # development dependencies
     console.print("\n")
-    console.print("Development dependencies ...", style="underline bright_white")
+    table = Table(title="Development Dependencies", box=box.MARKDOWN, show_lines=True)
+    table.add_column("Package", style="bright_white")
+    table.add_column("Installed Version", style="bright_white")
+    table.add_column("Latest Version", style="bright_white")
+    table.add_column("Status", style="bright_white")
+
+    # development dependencies
     for dependency in dev_dependencies:
         c = client.get(dependency)
         if isinstance(c, int):
@@ -136,31 +155,31 @@ def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
             continue
 
         package = Package(c.json())
+
+        development_packages.append(package)
+
+    for package in development_packages:
+        name = package.name
         latest_version = package.latest_version
-        frozen_version = frozen_dependencies.get(dependency.lower())
-
-        if frozen_version is None:
-            # deals with cases such as package names that don't exist such as "python"
-            messages.append(f"{dependency}")
-            continue
-
-        if frozen_version != latest_version:
-            if "git+https://" not in frozen_version:
-                report_dev_dependencies.append((f"{dependency} {frozen_version} -> {latest_version}", "bright_yellow"))
+        frozen_version = frozen_dependencies.get(name.lower())
+        if frozen_version and frozen_version != latest_version:
+            if "git+https://" in frozen_version:
+                status = "Check"
+                style = "bright_red"
             else:
-                report_dev_dependencies.append((f"{dependency} {frozen_version} -> {latest_version}", "bright_red"))
+                status = "Outdated"
+                style = "bright_yellow"
+        elif not frozen_version:
+            status = "Check"
+            style = "magenta"
+            frozen_version = "Unable to determine version"
         else:
-            report_dev_dependencies.append((f"{dependency} == {frozen_version}", "bright_green"))
+            status = "OK"
+            style = "bright_green"
 
-    if report_dev_dependencies:
-        for item in report_dev_dependencies:
-            console.print(item[0], style=item[1])
+        table.add_row(name, frozen_version, latest_version, status, style=style)
 
-    if len(messages) > 0:
-        console.print("\n")
-        console.print("Manual check required", style="underline bright_white")
-        for message in messages:
-            console.print(f"{message}", style="bright_red")
+    console.print(table)
 
     # cleanup
     frozen.clean_up_frozen()
