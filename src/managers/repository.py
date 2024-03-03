@@ -3,6 +3,8 @@ import re
 import subprocess
 import tempfile
 
+from rich.console import Console
+
 
 class RepositoryManager:
     def __init__(self, repo_url, docker_file_name):
@@ -17,14 +19,20 @@ class RepositoryManager:
     def clone(self):
         self.repo_dir = pathlib.Path(self.temp_dir.name)
         try:
+            console = Console()
+            console.print(f"Cloning repository {self.repo_url}...", style="yellow1")
             subprocess.run(
                 ["git", "clone", self.repo_url, self.temp_dir.name],
                 check=True,
                 capture_output=True,
             )
             subprocess.run(["git", "status"], cwd=self.repo_dir, check=True, capture_output=True)
-        except subprocess.CalledProcessError as e:
-            exit(f"Error cloning repository {self.repo_url}: {e}")
+        except subprocess.CalledProcessError:
+            console = Console()
+            console.print(
+                f"Error cloning repository {self.repo_url}: Please check the URL and try again.", style="red1"
+            )
+            exit()
 
     def branch(self, branch_name):
         try:
@@ -35,8 +43,12 @@ class RepositoryManager:
                 check=True,
                 capture_output=True,
             )
-        except subprocess.CalledProcessError as e:
-            exit(f"Error checking out branch {branch_name}: {e}")
+        except subprocess.CalledProcessError:
+            console = Console()
+            console.print(
+                f"Error checking out branch {branch_name}: Please check the branch name and try again.", style="red1"
+            )
+            exit()
 
     def toml_exists(self):
         return (self.repo_dir / "pyproject.toml").exists()
@@ -53,8 +65,16 @@ class RepositoryManager:
 
     @property
     def get_dockerfile(self):
-        with open(self.repo_dir / self.docker_file_name) as f:
-            return f.read()
+        try:
+            with open(self.repo_dir / self.docker_file_name) as f:
+                return f.read()
+        except FileNotFoundError:
+            console = Console()
+            console.print(
+                f"Error reading Dockerfile: {self.docker_file_name} not found in repository {self.repo_url}",
+                style="red1",
+            )
+            exit()
 
     @property
     def docker_image(self):

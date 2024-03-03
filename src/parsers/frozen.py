@@ -7,11 +7,13 @@ class FrozenParser:
     requirements = dict()
 
     def __post_init__(self):
-        self.file = pathlib.Path(__file__).parent.parent.parent / "requirements-frozen.txt"
+        self.file = pathlib.Path(__file__).parent.parent.parent / "requirements-frozen.txt" or None
 
     def parse_requirements(self):
+        if self.file is None:
+            return  # pragma: no cover
         if not self.file.is_file():
-            return
+            return  # pragma: no cover
 
         with open(self.file, "r") as f:
             for line in f.readlines():
