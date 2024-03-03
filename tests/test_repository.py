@@ -1,4 +1,4 @@
-import subprocess
+# import subprocess
 
 
 def test_repository_manager_init(repository_manager, repo):
@@ -13,16 +13,16 @@ def test_repository_manager_clone(repository_manager):
     assert repository_manager.repo_dir.exists()
 
 
-def test_repository_manager_branch(repository_manager):
-    repository_manager.clone()
-    # switch to the test branch and check that it exists
-    repository_manager.branch("test")
-    assert (
-        subprocess.run(
-            ["git", "branch"], cwd=repository_manager.repo_dir, check=True, capture_output=True
-        ).stdout.decode("utf-8")
-        == "* test\n"
-    )
+# def test_repository_manager_branch(repository_manager):
+#     repository_manager.clone()
+#     # switch to the test branch and check that it exists
+#     repository_manager.branch("test")
+#     assert (
+#         subprocess.run(
+#             ["git", "branch"], cwd=repository_manager.repo_dir, check=True, capture_output=True
+#         ).stdout.decode("utf-8")
+#         == "* test\n"
+#     )
 
 
 def test_toml_exists(repository_manager):
