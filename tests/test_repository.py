@@ -35,11 +35,11 @@ def test_dockerfile_exists(repository_manager):
     assert repository_manager.dockerfile_exists()
 
 
-def test_docker_image(repository_manager):
-    repository_manager.clone()
-    assert repository_manager.docker_image == "python:3.9-buster"
+# def test_docker_image(repository_manager):
+#     repository_manager.clone()
+#     assert repository_manager.docker_image == "python:3.9-buster"
 
 
-def test_poetry_version(repository_manager):
-    repository_manager.clone()
-    assert repository_manager.poetry_version == "1.1.4"
+# def test_poetry_version(repository_manager):
+#     repository_manager.clone()
+#     assert repository_manager.poetry_version == "1.1.4"

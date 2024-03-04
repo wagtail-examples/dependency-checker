@@ -46,7 +46,7 @@ django-recaptcha = "3.0.0"
 [tool.poetry.extras]
 gunicorn = ["gunicorn"]
 
-[tool.poetry.group.dev.dependencies]
+[tool.poetry.dev-dependencies]
 Werkzeug = "^2.0.3"
 django-extensions = "~3.2"
 dslr = "^0.4.0"
