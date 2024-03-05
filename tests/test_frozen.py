@@ -1,5 +1,5 @@
 import pytest
-from src.parsers.frozen import FrozenParser
+from src.parsers.temp import FrozenParser
 
 
 @pytest.fixture

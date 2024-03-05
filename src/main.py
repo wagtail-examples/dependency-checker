@@ -5,7 +5,7 @@ from rich.table import Table
 from src.managers.package import Client, Package
 from src.managers.repository import RepositoryManager
 from src.managers.runner import DockerManager
-from src.parsers.frozen import FrozenParser
+from src.parsers.temp import FrozenParser
 from src.parsers.toml import TomlParser
 
 console = Console()

@@ -1,4 +1,5 @@
 from src.parsers.docker import DockerFileParser
+from src.parsers.text import TextParser
 from src.parsers.toml import TomlParser
 
 
@@ -65,3 +66,23 @@ def test_toml_parser_file_error():
 
     parser = TomlParser("non_existent_file.toml")
     parser.pyproject_contents = {}
+
+
+def test_requirements_file_error():
+    """Test that the parser can handle a file not found error"""
+
+    parser = TextParser("non_existent_file.requirements")
+
+    assert parser.text_file_contents == ""
+
+
+def test_requirements(requirements_fixture):
+    """Test that the parser can match in the requirements file"""
+
+    # print(requirements_fixture)
+    parser = TextParser(requirements_fixture)
+
+    assert parser.dependencies["django"] == "4.2.10"
+    assert parser.dependencies["wagtail"] == "5.2.3"
+    # more dependencies could be tested here
+    assert parser.dependencies["honcho"] == "1.1.0"
