@@ -1,10 +1,8 @@
-# import os
+import os
 import pathlib
+import subprocess
 
 import pytest
-
-# import subprocess
-
 
 # from src.managers.repository import RepositoryManager
 # from src.parsers.toml import TomlParser
@@ -87,33 +85,27 @@ def requirements_fixture(requirements_content, tmpdir):
     return requirements_file
 
 
-# @pytest.fixture()
-# def repo(tmpdir):
-#     dir = pathlib.Path(tmpdir)
-#     base_dir = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
+@pytest.fixture()
+def repo_content(tmpdir, pyproject_content, typical_dockerfile_content):
+    os.chdir(tmpdir)
 
-#     pyproject_content = open(pathlib.Path(base_dir).joinpath("file_fixtures/pyproject.txt"), "r").read()
-#     dockerfile_content = open(pathlib.Path(base_dir).joinpath("file_fixtures/docker.txt"), "r").read()
+    subprocess.run(["git", "init"], check=True, capture_output=True)
+    subprocess.run(["git", "branch", "-M", "main"], check=True, capture_output=True)
+    subprocess.run(["touch", "pyproject.toml"], check=True, capture_output=True)
+    subprocess.run(["touch", "Dockerfile"], check=True, capture_output=True)
 
-#     os.chdir(dir)
+    with open("pyproject.toml", "w") as f:
+        f.write(pyproject_content)
 
-#     subprocess.run(["git", "config", "--global", "user.email", "user@example.com"], check=True, capture_output=True)
-#     subprocess.run(["git", "config", "--global", "user.name", "user"], check=True, capture_output=True)
-#     subprocess.run(["git", "config", "--global", "init.defaultBranch", "master"], check=True, capture_output=True)
-#     subprocess.run(["git", "init"], check=True, capture_output=True)
-#     subprocess.run(["touch", "pyproject.toml"], check=True, capture_output=True)
-#     subprocess.run(["touch", "Dockerfile"], check=True, capture_output=True)
+    with open("Dockerfile", "w") as f:
+        f.write(typical_dockerfile_content)
 
-#     with open(os.path.join(dir, "pyproject.toml"), "w") as f:
-#         f.write(pyproject_content)
-#     with open(os.path.join(dir, "Dockerfile"), "w") as f:
-#         f.write(dockerfile_content)
+    subprocess.run(["git", "add", "."], check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "add files"], check=True, capture_output=True)
 
-#     subprocess.run(["git", "add", "."], check=True, capture_output=True)
-#     subprocess.run(["git", "commit", "-m", "add files"], check=True, capture_output=True)
-#     subprocess.run(["git", "checkout", "-b", "test"], check=True, capture_output=True)
+    subprocess.run(["git", "branch", "test"], check=True, capture_output=True)
 
-#     return dir
+    return pathlib.Path(tmpdir).absolute()
 
 
 # @pytest.fixture
