@@ -1,4 +1,3 @@
-import pathlib
 from dataclasses import dataclass
 
 import tomli
@@ -11,7 +10,7 @@ class TomlParser:
     - Poetry dev dependencies
     """
 
-    pyproject_file_path: pathlib.Path
+    pyproject_file_path: str
     dependencies: dict = None
     dev_dependencies: dict = None
     modern_poetry: bool = False

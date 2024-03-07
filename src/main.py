@@ -13,18 +13,6 @@ from src.parsers.toml import TomlParser
 console = Console()
 
 
-# @click.option(
-#     "--docker-file-name",
-#     prompt="Dockerfile name (optional)",
-#     help="The name of the Dockerfile to use.",
-#     default="Dockerfile",
-# )
-# @click.option(
-#     "--docker-file-location",
-#     prompt="Dockerfile relative location (optional)",
-#     help="The location of the Dockerfile to use relative to the root.",
-#     default="./",
-# )
 @click.command()
 @click.option(
     "--repo-url",
@@ -73,10 +61,6 @@ def start(
     table = Table(title="Repository Information", box=box.MARKDOWN, show_lines=True)
     table.add_column("", style="bright_white")
     table.add_column("Details", style="bright_white")
-    # table.add_column("Repository URL", style="bright_white")
-    # table.add_column("Branch Name", style="bright_white")
-    # table.add_column("Dockerfile Path", style="bright_white")
-    # table.add_row(repository_manager.repo_url, repository_manager.get_branch(), repository_manager.dockerfile_path)
     table.add_row("Repository URL", repository_manager.repo_url)
     table.add_row("Branch Name", repository_manager.get_branch())
     table.add_row("Dockerfile Path", repository_manager.dockerfile_path)
@@ -90,11 +74,6 @@ def start(
         console.print("Exiting ...", style="red1")
         exit()
 
-    # print(repository_manager.docker_image)
-    # print(repository_manager.poetry_version)
-    # print(repository_manager.get_repo_dir)
-    # exit()
-
     # run the docker image
     docker = DockerManager(
         repository_manager.docker_image,
@@ -106,7 +85,7 @@ def start(
     bash = docker.bash_cmd()
 
     console.print("\n")
-    console.print(f"The command below will be user to run a docker container:\n{run} '{bash}'", style="yellow1")
+    console.print(f"The command below will be used to run a docker container:\n{run} '{bash}'", style="yellow1")
     process = click.confirm("Do you want to continue with the above command?", default=True)
 
     if not process:
@@ -115,61 +94,17 @@ def start(
 
     console.print("Running the docker image. This may take some time ...", style="yellow1")
     docker.run(run, bash)
-    exit()
-    # console.print("Running the docker image. This may take some time ...", style="yellow1")
-    # docker.run(docker.run_cmd, docker.run_args)
-
-    # console.print("\n")
-    # console.print("Running the docker image. This may take some time ...", style="yellow1")
-
-    # table.add_row(repository_manager.repo_url)
-    # table.add_row(repository_manager.get_branch())
-    # table.add_row(repository_manager.dockerfile_path)
-    # table.add_row(repository_manager.poetry_version)
-    # table.add_row(repository_manager.docker_image)
-
-    # print(repository_manager.docker_image)
-    # print(repository_manager.poetry_version)
-    # print(repository_manager.poetry_version)
-
-    # exit()
-    # exit()
-    # exit()
-    # if not docker_file_location == "./":
-    #     df = f"{docker_file_location}/{docker_file_name}"
-    #     repo_manager = RepositoryManager(repo_url, df)
-    # else:
-    #     repo_manager = RepositoryManager(repo_url, docker_file_name)
-
-    # repo_manager.clone()
-    # switch to an alternative branch if specified
-    # repo_manager.branch(branch_name)
-    # get the docker image from the Dockerfile
-    # docker_image = repository_manager.docker_image
-    # get the poetry version from the Dockerfile
-    # poetry_latest_version = client.get("poetry").json()["info"]["version"]
-
-    # console.print("\n")
-    # table = Table(title="Docker Information", box=box.MARKDOWN, show_lines=True)
-    # table.add_column("Docker Image", style="bright_white")
-    # table.add_column("Poetry Version", style="bright_white")
-    # table.add_column("Latest Poetry Version", style="bright_white")
-    # table.add_row(docker_image, poetry_version, poetry_latest_version)
-    # console.print(table)
-
-    # exit()
 
     # process the requirements-frozen.txt file as a FrozenParser object
     # it's used to lookup the package name and version installed in the docker image
-    frozen = TextParser()
-    frozen.parse_requirements()
-    frozen_dependencies = frozen.requirements
+    frozen = TextParser(pathlib.Path(repository_manager.get_repo_dir / "requirements-frozen.txt").absolute())
 
     # process the pyproject.toml file as a TomlParser object
     # it's used to lookup the package name and version specified in the pyproject.toml file
-    toml = TomlParser(repo_manager.toml)  # noqa
-    dependencies = sorted(toml.dependencies().keys())
-    dev_dependencies = sorted(toml.dev_dependencies().keys())
+    toml = TomlParser(pathlib.Path(repository_manager.get_repo_dir).absolute() / "pyproject.toml")
+
+    dependencies = sorted(toml.dependencies.keys())
+    dev_dependencies = sorted(toml.dev_dependencies.keys())
 
     messages = []
 
@@ -197,7 +132,7 @@ def start(
     for package in production_packages:
         name = package.name
         latest_version = package.latest_version
-        frozen_version = frozen_dependencies.get(name.lower())
+        frozen_version = frozen.dependencies.get(name.lower())
         if frozen_version and frozen_version != latest_version:
             if "git+https://" in frozen_version:
                 status = "Check"
@@ -244,7 +179,7 @@ def start(
     for package in development_packages:
         name = package.name
         latest_version = package.latest_version
-        frozen_version = frozen_dependencies.get(name.lower())
+        frozen_version = frozen.dependencies.get(name.lower())
         if frozen_version and frozen_version != latest_version:
             if "git+https://" in frozen_version:
                 status = "Check"
@@ -263,7 +198,3 @@ def start(
         table.add_row(name, frozen_version, latest_version, status, style=style)
 
     console.print(table)
-
-    # cleanup
-    frozen.clean_up_frozen()
-    docker.cleanup_docker()

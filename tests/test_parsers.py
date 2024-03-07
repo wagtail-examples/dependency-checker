@@ -33,15 +33,15 @@ def test_with_modern_dependencies(pyproject_fixture):
     parser = TomlParser(pyproject_fixture)
 
     assert parser.modern_poetry
-    assert parser.dependencies["python"] == "~3.11"
-    assert parser.dependencies["django"] == "~4.1"
+    assert parser.dependencies["python"] == "^3.9"
+    assert parser.dependencies["django"] == "~4.2"
     # more dependencies could be tested here
-    assert parser.dependencies["wagtail"] == "~5.1.1"
+    assert parser.dependencies["wagtail"] == "~5.2"
 
-    assert parser.dev_dependencies["Werkzeug"] == "^2.0.3"
-    assert parser.dev_dependencies["django-extensions"] == "~3.2"
+    assert parser.dev_dependencies["black"] == "^24.2.0"
+    assert parser.dev_dependencies["isort"] == "^5.13.2"
     # more dev dependencies could be tested here
-    assert parser.dev_dependencies["django-types"] == "^0.18.0"
+    assert parser.dev_dependencies["flake8"] == "^7.0.0"
 
 
 def test_with_not_modern_dependencies(pyproject_not_modern_fixture):
@@ -50,15 +50,15 @@ def test_with_not_modern_dependencies(pyproject_not_modern_fixture):
     parser = TomlParser(pyproject_not_modern_fixture)
 
     assert not parser.modern_poetry
-    assert parser.dependencies["python"] == "~3.11"
-    assert parser.dependencies["django"] == "~4.1"
+    assert parser.dependencies["python"] == "^3.9"
+    assert parser.dependencies["django"] == "~4.2"
     # more dependencies could be tested here
-    assert parser.dependencies["wagtail"] == "~5.1.1"
+    assert parser.dependencies["wagtail"] == "~5.2"
 
-    assert parser.dev_dependencies["Werkzeug"] == "^2.0.3"
-    assert parser.dev_dependencies["django-extensions"] == "~3.2"
+    assert parser.dev_dependencies["black"] == "^24.2.0"
+    assert parser.dev_dependencies["isort"] == "^5.13.2"
     # more dev dependencies could be tested here
-    assert parser.dev_dependencies["django-types"] == "^0.18.0"
+    assert parser.dev_dependencies["flake8"] == "^7.0.0"
 
 
 def test_toml_parser_file_error():
@@ -79,10 +79,9 @@ def test_requirements_file_error():
 def test_requirements(requirements_fixture):
     """Test that the parser can match in the requirements file"""
 
-    # print(requirements_fixture)
     parser = TextParser(requirements_fixture)
 
-    assert parser.dependencies["django"] == "4.2.10"
+    assert parser.dependencies["django"] == "4.2.11"
     assert parser.dependencies["wagtail"] == "5.2.3"
     # more dependencies could be tested here
-    assert parser.dependencies["honcho"] == "1.1.0"
+    assert parser.dependencies["black"] == "24.2.0"
