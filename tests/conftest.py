@@ -12,7 +12,7 @@ import pytest
 def typical_dockerfile_content():
     """Return the content of a typical Dockerfile for testing"""
 
-    with open("tests/file_fixtures/docker.txt", "r") as f:
+    with open("tests/test_files/Dockerfile", "r") as f:
         return f.read()
 
 
@@ -28,20 +28,32 @@ def dockerfile_fixture(typical_dockerfile_content, tmpdir):
 
 
 @pytest.fixture
-def pyproject_content():
-    """Return the content of a typical pyproject.toml for testing"""
+def poetry_lock_content():
+    """Return the content of a typical poetry.lock for testing"""
 
-    with open("tests/file_fixtures/pyproject.txt", "r") as f:
+    with open("tests/test_files/poetry.lock", "r") as f:
         return f.read()
 
 
 @pytest.fixture
-def pyproject_fixture(pyproject_content, tmpdir):
+def pyproject_content():
+    """Return the content of a typical pyproject.toml for testing"""
+
+    with open("tests/test_files/pyproject.toml", "r") as f:
+        return f.read()
+
+
+@pytest.fixture
+def pyproject_fixture(pyproject_content, poetry_lock_content, tmpdir):
     """Create a pyproject.toml with content for testing"""
 
     pyproject = tmpdir.join("pyproject.toml")
     lines = pyproject_content.split("\n")
     pyproject.write("\n".join(lines))
+
+    poetry_lock = tmpdir.join("poetry.lock")
+    lines = poetry_lock_content.split("\n")
+    poetry_lock.write("\n".join(lines))
 
     return pathlib.Path(pyproject).absolute()
 
@@ -51,17 +63,21 @@ def not_modern_pyproject_content():
     """Return the content of a typical pyproject.toml for testing
     and modify it to use the old dev-dependencies key"""
 
-    with open("tests/file_fixtures/pyproject_not_modern.txt", "r") as f:
+    with open("tests/test_files/pyproject_not_modern.toml", "r") as f:
         return f.read()
 
 
 @pytest.fixture
-def pyproject_not_modern_fixture(not_modern_pyproject_content, tmpdir):
+def pyproject_not_modern_fixture(not_modern_pyproject_content, poetry_lock_content, tmpdir):
     """Create a pyproject.toml with content for testing"""
 
     pyproject = tmpdir.join("pyproject.toml")
     lines = not_modern_pyproject_content.split("\n")
     pyproject.write("\n".join(lines))
+
+    poetry_lock = tmpdir.join("poetry.lock")
+    lines = poetry_lock_content.split("\n")
+    poetry_lock.write("\n".join(lines))
 
     return pathlib.Path(pyproject).absolute()
 
@@ -70,7 +86,7 @@ def pyproject_not_modern_fixture(not_modern_pyproject_content, tmpdir):
 def requirements_content():
     """Return the content of a typical requirements.txt for testing"""
 
-    with open("tests/file_fixtures/requirements.txt", "r") as f:
+    with open("tests/test_files/requirements.txt", "r") as f:
         return f.read()
 
 
@@ -85,17 +101,21 @@ def requirements_fixture(requirements_content, tmpdir):
     return requirements_file
 
 
-@pytest.fixture()
-def repo_content(tmpdir, pyproject_content, typical_dockerfile_content):
+@pytest.fixture
+def repo_content(pyproject_content, typical_dockerfile_content, poetry_lock_content, tmpdir):
     os.chdir(tmpdir)
 
     subprocess.run(["git", "init"], check=True, capture_output=True)
     subprocess.run(["git", "branch", "-M", "main"], check=True, capture_output=True)
     subprocess.run(["touch", "pyproject.toml"], check=True, capture_output=True)
+    subprocess.run(["touch", "poetry.lock"], check=True, capture_output=True)
     subprocess.run(["touch", "Dockerfile"], check=True, capture_output=True)
 
     with open("pyproject.toml", "w") as f:
         f.write(pyproject_content)
+
+    with open("poetry.lock", "w") as f:
+        f.write(poetry_lock_content)
 
     with open("Dockerfile", "w") as f:
         f.write(typical_dockerfile_content)

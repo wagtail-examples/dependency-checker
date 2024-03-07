@@ -4,9 +4,9 @@ import click
 from rich import box
 from rich.console import Console
 from rich.table import Table
+from src.managers.docker import DockerManager
 from src.managers.package import Client, Package
 from src.managers.repository import RepositoryManager
-from src.managers.runner import DockerManager
 from src.parsers.text import TextParser
 from src.parsers.toml import TomlParser
 
@@ -90,8 +90,37 @@ def start(
         console.print("Exiting ...", style="red1")
         exit()
 
+    # print(repository_manager.docker_image)
+    # print(repository_manager.poetry_version)
+    # print(repository_manager.get_repo_dir)
+    # exit()
+
+    # run the docker image
+    docker = DockerManager(
+        repository_manager.docker_image,
+        repository_manager.poetry_version,
+        repository_manager.get_repo_dir,
+    )
+
+    run = docker.run_cmd()
+    bash = docker.bash_cmd()
+
     console.print("\n")
+    console.print(f"The command below will be user to run a docker container:\n{run} '{bash}'", style="yellow1")
+    process = click.confirm("Do you want to continue with the above command?", default=True)
+
+    if not process:
+        console.print("Exiting ...", style="red1")
+        exit()
+
     console.print("Running the docker image. This may take some time ...", style="yellow1")
+    docker.run(run, bash)
+    exit()
+    # console.print("Running the docker image. This may take some time ...", style="yellow1")
+    # docker.run(docker.run_cmd, docker.run_args)
+
+    # console.print("\n")
+    # console.print("Running the docker image. This may take some time ...", style="yellow1")
 
     # table.add_row(repository_manager.repo_url)
     # table.add_row(repository_manager.get_branch())
@@ -129,11 +158,6 @@ def start(
     # console.print(table)
 
     # exit()
-
-    # run the docker image
-    docker = DockerManager(docker_image, poetry_version, repo_manager.repo_dir)  # noqa
-    console.print("Running the docker image. This may take some time ...", style="yellow1")
-    docker.run(docker.run_cmd, docker.run_args)
 
     # process the requirements-frozen.txt file as a FrozenParser object
     # it's used to lookup the package name and version installed in the docker image

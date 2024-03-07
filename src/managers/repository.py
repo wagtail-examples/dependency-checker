@@ -31,6 +31,10 @@ class RepositoryManager:
             capture_output=True,
         )
 
+    @property
+    def get_repo_dir(self):
+        return pathlib.Path(self.repo_dir.name)
+
     def find_docker_files(self):
         return list(pathlib.Path(self.repo_dir.name).glob("**/Dockerfile*"))
 
