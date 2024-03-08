@@ -20,6 +20,11 @@ def test_repository_manager_init(repo_content):
     assert os.path.exists(".git")
     assert repo.get_branch() == "main"
 
+    assert repo.get_repo_dir == repo_path
+
+    # Test get branches
+    assert repo.get_branches() == {1: "HEAD -> main", 2: "main ( DEFAULT )", 3: "test"}
+
     # Test change branch
     assert repo.change_branch("test") == "branch 'test' set up to track 'origin/test'."
 
@@ -59,50 +64,3 @@ def test_repository_manager_init(repo_content):
     os.remove(repo_path / "Dockerfile3")
     os.remove(repo_path / "sub_folder/Dockerfile4")
     assert repo.find_docker_files() == []
-
-
-# import subprocess
-
-
-# def test_repository_manager_init(repository_manager, repo):
-#     assert repository_manager.repo_url == repo
-#     assert repository_manager.docker_file_name == "Dockerfile"
-#     assert repository_manager.temp_dir is not None
-#     assert "docker-run-" in repository_manager.temp_dir.name
-
-
-# def test_repository_manager_clone(repository_manager):
-#     repository_manager.clone()
-#     assert repository_manager.repo_dir.exists()
-
-
-# # def test_repository_manager_branch(repository_manager):
-# #     repository_manager.clone()
-# #     # switch to the test branch and check that it exists
-# #     repository_manager.branch("test")
-# #     assert (
-# #         subprocess.run(
-# #             ["git", "branch"], cwd=repository_manager.repo_dir, check=True, capture_output=True
-# #         ).stdout.decode("utf-8")
-# #         == "* test\n"
-# #     )
-
-
-# def test_toml_exists(repository_manager):
-#     repository_manager.clone()
-#     assert repository_manager.toml_exists()
-
-
-# def test_dockerfile_exists(repository_manager):
-#     repository_manager.clone()
-#     assert repository_manager.dockerfile_exists()
-
-
-# # def test_docker_image(repository_manager):
-# #     repository_manager.clone()
-# #     assert repository_manager.docker_image == "python:3.9-buster"
-
-
-# # def test_poetry_version(repository_manager):
-# #     repository_manager.clone()
-# #     assert repository_manager.poetry_version == "1.1.4"
