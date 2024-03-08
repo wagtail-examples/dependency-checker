@@ -16,14 +16,14 @@ def typical_dockerfile_content():
 
 
 @pytest.fixture
-def dockerfile_fixture(typical_dockerfile_content, tmpdir):
+def dockerfile_fixture(typical_dockerfile_content, tmp_path):
     """Create a dockerfile with content for testing"""
 
-    dockerfile = tmpdir.join("Dockerfile")
+    dockerfile = tmp_path / "Dockerfile"
     lines = typical_dockerfile_content.split("\n")
-    dockerfile.write("\n".join(lines))
+    dockerfile.write_text("\n".join(lines))
 
-    return pathlib.Path(dockerfile).absolute()
+    return dockerfile
 
 
 @pytest.fixture
@@ -43,16 +43,16 @@ def pyproject_content():
 
 
 @pytest.fixture
-def pyproject_fixture(pyproject_content, poetry_lock_content, tmpdir):
+def pyproject_fixture(pyproject_content, poetry_lock_content, tmp_path):
     """Create a pyproject.toml with content for testing"""
 
-    pyproject = tmpdir.join("pyproject.toml")
+    pyproject = tmp_path / "pyproject.toml"
     lines = pyproject_content.split("\n")
-    pyproject.write("\n".join(lines))
+    pyproject.write_text("\n".join(lines))
 
-    poetry_lock = tmpdir.join("poetry.lock")
+    poetry_lock = tmp_path / "poetry.lock"
     lines = poetry_lock_content.split("\n")
-    poetry_lock.write("\n".join(lines))
+    poetry_lock.write_text("\n".join(lines))
 
     return pathlib.Path(pyproject).absolute()
 
@@ -67,16 +67,16 @@ def not_modern_pyproject_content():
 
 
 @pytest.fixture
-def pyproject_not_modern_fixture(not_modern_pyproject_content, poetry_lock_content, tmpdir):
+def pyproject_not_modern_fixture(not_modern_pyproject_content, poetry_lock_content, tmp_path):
     """Create a pyproject.toml with content for testing"""
 
-    pyproject = tmpdir.join("pyproject.toml")
+    pyproject = tmp_path / "pyproject.toml"
     lines = not_modern_pyproject_content.split("\n")
-    pyproject.write("\n".join(lines))
+    pyproject.write_text("\n".join(lines))
 
-    poetry_lock = tmpdir.join("poetry.lock")
+    poetry_lock = tmp_path / "poetry.lock"
     lines = poetry_lock_content.split("\n")
-    poetry_lock.write("\n".join(lines))
+    poetry_lock.write_text("\n".join(lines))
 
     return pathlib.Path(pyproject).absolute()
 
@@ -90,19 +90,19 @@ def requirements_content():
 
 
 @pytest.fixture
-def requirements_fixture(requirements_content, tmpdir):
+def requirements_fixture(requirements_content, tmp_path):
     """Create a requirements.txt file with content for testing"""
 
-    requirements_file = tmpdir.join("requirements.txt")
+    requirements_file = tmp_path / "requirements.txt"
     lines = requirements_content.split("\n")
-    requirements_file.write("\n".join(lines))
+    requirements_file.write_text("\n".join(lines))
 
     return pathlib.Path(requirements_file).absolute()
 
 
 @pytest.fixture
-def repo_content(pyproject_content, typical_dockerfile_content, poetry_lock_content, tmpdir):
-    os.chdir(tmpdir)
+def repo_content(pyproject_content, typical_dockerfile_content, poetry_lock_content, tmp_path):
+    os.chdir(tmp_path)
 
     subprocess.run(["git", "init"], check=True, capture_output=True)
     subprocess.run(["git", "branch", "-M", "main"], check=True, capture_output=True)
@@ -124,4 +124,4 @@ def repo_content(pyproject_content, typical_dockerfile_content, poetry_lock_cont
 
     subprocess.run(["git", "branch", "test"], check=True, capture_output=True)
 
-    return pathlib.Path(tmpdir).absolute()
+    return pathlib.Path(tmp_path).absolute()
