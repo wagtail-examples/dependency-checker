@@ -99,6 +99,19 @@ def start(
     console.print("Running the docker image. This may take some time ...", style="yellow1")
     docker.run()
 
+    click.clear()
+
+    console.print("\n")
+    table = Table(title="Repository Information", box=box.MARKDOWN, show_lines=True)
+    table.add_column("", style="bright_white")
+    table.add_column("Details", style="bright_white")
+    table.add_row("Repository URL", repository_manager.repo_url)
+    table.add_row("Branch Name", repository_manager.get_branch())
+    table.add_row("Dockerfile Path", repository_manager.dockerfile_path)
+    table.add_row("Poetry Version", repository_manager.poetry_version)
+    table.add_row("Docker Image", repository_manager.docker_image)
+    console.print(table)
+
     # process the requirements-frozen.txt file as a FrozenParser object
     # it's used to lookup the package name and version installed in the docker image
     frozen = TextParser(pathlib.Path(repository_manager.get_repo_dir / "requirements-frozen.txt").absolute())
