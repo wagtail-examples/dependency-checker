@@ -1,45 +1,42 @@
-# import subprocess
+import os
+import pathlib
+
+from src.managers.repository import RepositoryManager
 
 
-def test_repository_manager_init(repository_manager, repo):
-    assert repository_manager.repo_url == repo
-    assert repository_manager.docker_file_name == "Dockerfile"
-    assert repository_manager.temp_dir is not None
-    assert "docker-run-" in repository_manager.temp_dir.name
+def test_repository_manager_init(repo_content):
+    repo = RepositoryManager(repo_content)
+    repo_path = pathlib.Path(__file__).parent.parent / repo.repo_dir.name
 
+    assert repo.repo_url == repo_content
 
-def test_repository_manager_clone(repository_manager):
-    repository_manager.clone()
-    assert repository_manager.repo_dir.exists()
+    # Test that the repository was cloned and the path is correct
+    assert pathlib.Path(repo.repo_dir.name) == repo_path.absolute()
 
+    # Test that these files exist
+    os.chdir(repo.repo_dir.name)
+    assert os.path.exists("pyproject.toml")
+    assert os.path.exists("Dockerfile")
+    assert os.path.exists(".git")
+    assert repo.get_branch() == "main"
 
-# def test_repository_manager_branch(repository_manager):
-#     repository_manager.clone()
-#     # switch to the test branch and check that it exists
-#     repository_manager.branch("test")
-#     assert (
-#         subprocess.run(
-#             ["git", "branch"], cwd=repository_manager.repo_dir, check=True, capture_output=True
-#         ).stdout.decode("utf-8")
-#         == "* test\n"
-#     )
+    assert repo.get_repo_dir == repo_path
 
+    # Test get branches
+    assert repo.get_branches() == {1: "HEAD -> main", 2: "main ( DEFAULT )", 3: "test"}
 
-def test_toml_exists(repository_manager):
-    repository_manager.clone()
-    assert repository_manager.toml_exists()
+    # Test change branch
+    assert repo.change_branch("test") == "branch 'test' set up to track 'origin/test'."
 
+    # Test nonexistent branch
+    assert (
+        repo.change_branch("nonexistent")
+        == "Error: Branch nonexistent does not exist in the repository. Please check the branch name and try again."
+    )
 
-def test_dockerfile_exists(repository_manager):
-    repository_manager.clone()
-    assert repository_manager.dockerfile_exists()
+    repo.dockerfile_path = repo.find_docker_files()[0]
+    repo.parse_docker_image()
+    assert repo.docker_image == "python:3.11-slim-bullseye"
 
-
-def test_docker_image(repository_manager):
-    repository_manager.clone()
-    assert repository_manager.docker_image == "python:3.9-buster"
-
-
-def test_poetry_version(repository_manager):
-    repository_manager.clone()
-    assert repository_manager.poetry_version == "1.1.4"
+    repo.parse_poetry_version()
+    assert repo.poetry_version == "1.3.2"

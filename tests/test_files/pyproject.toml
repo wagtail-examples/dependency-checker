@@ -1,0 +1,28 @@
+#
+# A typical pyproject.toml file for a Wagtail project
+#
+
+[tool.poetry]
+name = "test-files"
+version = "0.1.0"
+description = ""
+authors = ["Nick Moreton <nick.moreton@torchbox.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+wagtail = "~5.2"
+django = "~4.2"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.2.0"
+isort = "^5.13.2"
+flake8 = "^7.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"

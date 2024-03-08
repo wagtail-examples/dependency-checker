@@ -1,11 +1,15 @@
+import pathlib
+
 import click
 from rich import box
+from rich.columns import Columns
 from rich.console import Console
 from rich.table import Table
-from src.managers.package import Client, Package
+from src.client import PyPiClient
+from src.managers.docker import DockerManager
+from src.managers.package import Package
 from src.managers.repository import RepositoryManager
-from src.managers.runner import DockerManager
-from src.parsers.frozen import FrozenParser
+from src.parsers.text import TextParser
 from src.parsers.toml import TomlParser
 
 console = Console()
@@ -17,76 +21,127 @@ console = Console()
     prompt="Repository URL",
     help="The URL of the repository to clone.",
 )
-@click.option(
-    "--branch-name",
-    prompt="Branch name (optional)",
-    help="The name of the branch to checkout.",
-    default="master",
-)
-@click.option(
-    "--docker-file-name",
-    prompt="Dockerfile name (optional)",
-    help="The name of the Dockerfile to use.",
-    default="Dockerfile",
-)
-@click.option(
-    "--docker-file-location",
-    prompt="Dockerfile relative location (optional)",
-    help="The location of the Dockerfile to use relative to the root.",
-    default="./",
-)
-def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
-    console.print("\n")
-    table = Table(title="Repository Information", box=box.MARKDOWN, show_lines=True)
-    table.add_column("Repository URL", style="bright_white")
-    table.add_column("Branch Name", style="bright_white")
-    table.add_column("Dockerfile", style="bright_white")
-    table.add_column("Dockerfile Location", style="bright_white")
-    table.add_row(repo_url, branch_name, docker_file_name, docker_file_location)
-    console.print(table)
+def start(repo_url):
+    console.clear()
+    console.print("Welcome to the Dependency Checker.", style="bright_white")
+    console.print(
+        "This tool will help you analyze the python dependencies used in a Docker image.", style="bright_white"
+    )
+    console.print("Please wait while we process the repository ...", style="cyan1")
+
+    client = PyPiClient()
 
     # clone the repository
-    if not docker_file_location == "./":
-        df = f"{docker_file_location}/{docker_file_name}"
-        repo_manager = RepositoryManager(repo_url, df)
+    repository_manager = RepositoryManager(repo_url)
+
+    branches = repository_manager.get_branches()
+    console.print("")
+    console.print("Available branches:", style="yellow1")
+
+    column_data = []
+    for branch in branches.items():
+        if branch[0] < 10:
+            column_data.append(f" {branch[0]} {branch[1]}")
+        else:
+            column_data.append(f"{branch[0]} {branch[1]}")
+    columns = Columns(column_data, equal=True, expand=True, column_first=True, padding=(0, 0))
+    console.print(columns)
+
+    console.print("")
+    choice = console.input("Enter the branch number of the branch you'd like to analyse: ")
+    if not choice or int(choice) not in branches:
+        console.print("Invalid branch number.", style="red1")
+        exit()
+    branch_name = branches[int(choice)]
+    repository_manager.change_branch(branch_name)
+
+    console.clear()
+
+    docker_files = repository_manager.find_docker_files()
+
+    if len(docker_files) == 0:
+        console.print("No Dockerfile found in the repository.", style="red1")
+        exit()
+
+    if len(docker_files) > 1:
+        choices = [f"{i}. {docker_file.name}" for i, docker_file in enumerate(docker_files, 1)]
+        choices = "\n".join(choices)
+        choice = console.input(f"Multiple Dockerfiles found. Please choose one:\n{choices}\n")
+        repository_manager.dockerfile_path = str(pathlib.Path(docker_files[int(choice) - 1]).absolute())
     else:
-        repo_manager = RepositoryManager(repo_url, docker_file_name)
+        repository_manager.dockerfile_path = str(pathlib.Path(docker_files[0]).absolute())
 
-    client = Client("https://pypi.org/pypi")
+    repository_manager.parse_docker_image()
+    repository_manager.parse_poetry_version()
 
-    repo_manager.clone()
-    # switch to an alternative branch if specified
-    repo_manager.branch(branch_name)
-    # get the docker image from the Dockerfile
-    docker_image = repo_manager.docker_image
-    # get the poetry version from the Dockerfile
-    poetry_version = repo_manager.poetry_version
-    poetry_latest_version = client.get("poetry").json()["info"]["version"]
-
-    console.print("\n")
-    table = Table(title="Docker Information", box=box.MARKDOWN, show_lines=True)
-    table.add_column("Docker Image", style="bright_white")
-    table.add_column("Poetry Version", style="bright_white")
-    table.add_column("Latest Poetry Version", style="bright_white")
-    table.add_row(docker_image, poetry_version, poetry_latest_version)
+    table = Table(title="Repository Information", box=box.MARKDOWN, show_lines=True)
+    table.add_column("", style="bright_white")
+    table.add_column("Details", style="bright_white")
+    table.add_row("Repository URL", repository_manager.repo_url)
+    table.add_row("Branch Name", repository_manager.get_branch())
+    table.add_row("Dockerfile Path", repository_manager.dockerfile_path)
+    table.add_row("Poetry Version", repository_manager.poetry_version)
+    table.add_row("Docker Image", repository_manager.docker_image)
     console.print(table)
 
+    process = click.confirm("Do you want to continue with the above details?", default=True)
+
+    console.clear()
+
+    if not process:
+        console.print("Exiting ...", style="red1")
+        exit()
+
     # run the docker image
-    docker = DockerManager(docker_image, poetry_version, repo_manager.repo_dir)
+    docker = DockerManager(
+        repository_manager.docker_image,
+        repository_manager.poetry_version,
+        repository_manager.get_repo_dir,
+    )
+
+    docker.generate_run_command()
+    docker.generate_bash_command()
+
+    console.print(
+        f"The command below will be used to run a docker container:\n\n{docker.run_cmd} '{docker.bash_cmd}'\n",
+        style="bright_white",
+    )
+    process = click.confirm("Do you want to continue with the above command?", default=True)
+
+    console.clear()
+
+    if not process:
+        console.print("Exiting ...", style="red1")
+        exit()
+
     console.print("Running the docker image. This may take some time ...", style="yellow1")
-    docker.run(docker.run_cmd, docker.run_args)
+    docker.run()
+
+    console.clear()
+
+    console.print("")
+    table = Table(title="Repository Information", box=box.MARKDOWN, show_lines=True)
+    table.add_column("", style="bright_white")
+    table.add_column("Details", style="bright_white")
+    table.add_row("Repository URL", repository_manager.repo_url)
+    table.add_row("Branch Name", repository_manager.get_branch())
+    table.add_row("Dockerfile Path", repository_manager.dockerfile_path)
+    table.add_row("Poetry Version", repository_manager.poetry_version)
+    table.add_row("Docker Image", repository_manager.docker_image)
+    console.print(table)
+
+    console.print("Analyzing the dependencies ...", style="cyan1")
 
     # process the requirements-frozen.txt file as a FrozenParser object
     # it's used to lookup the package name and version installed in the docker image
-    frozen = FrozenParser()
-    frozen.parse_requirements()
-    frozen_dependencies = frozen.requirements
+    frozen = TextParser(pathlib.Path(repository_manager.get_repo_dir / "requirements-frozen.txt").absolute())
 
     # process the pyproject.toml file as a TomlParser object
     # it's used to lookup the package name and version specified in the pyproject.toml file
-    toml = TomlParser(repo_manager.toml)
-    dependencies = sorted(toml.dependencies().keys())
-    dev_dependencies = sorted(toml.dev_dependencies().keys())
+    toml = TomlParser(pathlib.Path(repository_manager.get_repo_dir).absolute() / "pyproject.toml")
+
+    dependencies = sorted(toml.dependencies.keys())
+    dev_dependencies = sorted(toml.dev_dependencies.keys())
 
     messages = []
 
@@ -94,7 +149,7 @@ def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
     development_packages = []
 
     # production dependencies
-    console.print("\n")
+    console.print("")
     table = Table(title="Production Dependencies", box=box.MARKDOWN, show_lines=True)
     table.add_column("Package", style="bright_white")
     table.add_column("Installed Version", style="bright_white")
@@ -102,7 +157,7 @@ def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
     table.add_column("Status", style="bright_white")
 
     for dependency in dependencies:
-        c = client.get(dependency)
+        c = client.get_package(dependency)
         if isinstance(c, int):
             # deals with cases such as package names with [extras] in them
             messages.append(f"{dependency}")
@@ -114,7 +169,7 @@ def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
     for package in production_packages:
         name = package.name
         latest_version = package.latest_version
-        frozen_version = frozen_dependencies.get(name.lower())
+        frozen_version = frozen.dependencies.get(name.lower())
         if frozen_version and frozen_version != latest_version:
             if "git+https://" in frozen_version:
                 status = "Check"
@@ -148,7 +203,7 @@ def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
 
     # development dependencies
     for dependency in dev_dependencies:
-        c = client.get(dependency)
+        c = client.get_package(dependency)
         if isinstance(c, int):
             # deals with cases such as package names with [extras] in them
             messages.append(f"{dependency}")
@@ -161,7 +216,7 @@ def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
     for package in development_packages:
         name = package.name
         latest_version = package.latest_version
-        frozen_version = frozen_dependencies.get(name.lower())
+        frozen_version = frozen.dependencies.get(name.lower())
         if frozen_version and frozen_version != latest_version:
             if "git+https://" in frozen_version:
                 status = "Check"
@@ -180,7 +235,3 @@ def start(repo_url, branch_name, docker_file_name, docker_file_location=None):
         table.add_row(name, frozen_version, latest_version, status, style=style)
 
     console.print(table)
-
-    # cleanup
-    frozen.clean_up_frozen()
-    docker.cleanup_docker()
