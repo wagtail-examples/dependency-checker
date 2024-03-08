@@ -105,6 +105,8 @@ def repo_content(pyproject_content, typical_dockerfile_content, poetry_lock_cont
     os.chdir(tmp_path)
 
     subprocess.run(["git", "init"], check=True, capture_output=True)
+    subprocess.run(["git", "config", "--local", "user.name", "a"], check=True, capture_output=True)
+    subprocess.run(["git", "config", "--local", "user.email", "a@b.com"], check=True, capture_output=True)
     subprocess.run(["git", "branch", "-M", "main"], check=True, capture_output=True)
     subprocess.run(["touch", "pyproject.toml"], check=True, capture_output=True)
     subprocess.run(["touch", "poetry.lock"], check=True, capture_output=True)
