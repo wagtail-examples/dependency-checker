@@ -2,6 +2,7 @@ import pathlib
 
 import click
 from rich import box
+from rich.columns import Columns
 from rich.console import Console
 from rich.table import Table
 from src.client import PyPiClient
@@ -21,25 +22,40 @@ console = Console()
     help="The URL of the repository to clone.",
 )
 def start(repo_url):
+    console.clear()
+    console.print("Welcome to the Dependency Checker.", style="bright_white")
+    console.print(
+        "This tool will help you analyze the python dependencies used in a Docker image.", style="bright_white"
+    )
+    console.print("Please wait while we process the repository ...", style="cyan1")
+
     client = PyPiClient()
 
     # clone the repository
     repository_manager = RepositoryManager(repo_url)
 
     branches = repository_manager.get_branches()
+    console.print("")
     console.print("Available branches:", style="yellow1")
 
+    column_data = []
     for branch in branches.items():
         if branch[0] < 10:
-            console.print(f" {branch[0]} {branch[1]}")
+            column_data.append(f" {branch[0]} {branch[1]}")
         else:
-            console.print(f"{branch[0]} {branch[1]}")
-    choice = console.input("Enter a branch number for checkout: ")
+            column_data.append(f"{branch[0]} {branch[1]}")
+    columns = Columns(column_data, equal=True, expand=True, column_first=True, padding=(0, 0))
+    console.print(columns)
+
+    console.print("")
+    choice = console.input("Enter the branch number of the branch you'd like to analyse: ")
     if not choice or int(choice) not in branches:
         console.print("Invalid branch number.", style="red1")
         exit()
     branch_name = branches[int(choice)]
     repository_manager.change_branch(branch_name)
+
+    console.clear()
 
     docker_files = repository_manager.find_docker_files()
 
@@ -58,7 +74,6 @@ def start(repo_url):
     repository_manager.parse_docker_image()
     repository_manager.parse_poetry_version()
 
-    console.print("\n")
     table = Table(title="Repository Information", box=box.MARKDOWN, show_lines=True)
     table.add_column("", style="bright_white")
     table.add_column("Details", style="bright_white")
@@ -70,6 +85,8 @@ def start(repo_url):
     console.print(table)
 
     process = click.confirm("Do you want to continue with the above details?", default=True)
+
+    console.clear()
 
     if not process:
         console.print("Exiting ...", style="red1")
@@ -85,12 +102,13 @@ def start(repo_url):
     docker.generate_run_command()
     docker.generate_bash_command()
 
-    console.print("\n")
     console.print(
-        f"The command below will be used to run a docker container:\n{docker.run_cmd} '{docker.bash_cmd}'",
-        style="yellow1",
+        f"The command below will be used to run a docker container:\n\n{docker.run_cmd} '{docker.bash_cmd}'\n",
+        style="bright_white",
     )
     process = click.confirm("Do you want to continue with the above command?", default=True)
+
+    console.clear()
 
     if not process:
         console.print("Exiting ...", style="red1")
@@ -99,9 +117,9 @@ def start(repo_url):
     console.print("Running the docker image. This may take some time ...", style="yellow1")
     docker.run()
 
-    click.clear()
+    console.clear()
 
-    console.print("\n")
+    console.print("")
     table = Table(title="Repository Information", box=box.MARKDOWN, show_lines=True)
     table.add_column("", style="bright_white")
     table.add_column("Details", style="bright_white")
@@ -111,6 +129,8 @@ def start(repo_url):
     table.add_row("Poetry Version", repository_manager.poetry_version)
     table.add_row("Docker Image", repository_manager.docker_image)
     console.print(table)
+
+    console.print("Analyzing the dependencies ...", style="cyan1")
 
     # process the requirements-frozen.txt file as a FrozenParser object
     # it's used to lookup the package name and version installed in the docker image
@@ -129,7 +149,7 @@ def start(repo_url):
     development_packages = []
 
     # production dependencies
-    console.print("\n")
+    console.print("")
     table = Table(title="Production Dependencies", box=box.MARKDOWN, show_lines=True)
     table.add_column("Package", style="bright_white")
     table.add_column("Installed Version", style="bright_white")
