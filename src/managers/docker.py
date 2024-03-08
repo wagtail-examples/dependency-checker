@@ -8,9 +8,10 @@ class DockerManager:
     poetry_version: str
     repo_dir: str
     docker_run_name: str = field(default="poetry-export")
-    run_command: str = field(init=False)
+    run_cmd: str = field(init=False)
+    bash_cmd: str = field(init=False)
 
-    def run_cmd(self):
+    def generate_run_command(self):
         cmd = [
             "docker run --name",
             f"{self.docker_run_name}",
@@ -20,17 +21,18 @@ class DockerManager:
             self.image,
             "bash -c",
         ]
-        self.run_command = " ".join(cmd)
-        return self.run_command
+        self.run_cmd = " ".join(cmd)
 
-    def bash_cmd(self):
+    def generate_bash_command(self):
         cmd = [
             "pip install -U pip",
             f"pip install poetry=={self.poetry_version}",
             "poetry export -f requirements.txt -o requirements-frozen.txt --without-hashes --dev",
         ]
         self.bash_cmd = " && ".join(cmd)
-        return self.bash_cmd
 
-    def run(self, cmd, args):
-        subprocess.run(f"{cmd} '{args}'", shell=True, check=True, cwd=self.repo_dir)
+    def run(self, run_cmd=None, bash_cmd=None):
+        if run_cmd and bash_cmd:
+            subprocess.run(f"{run_cmd} '{bash_cmd}'", shell=True, check=True, cwd=self.repo_dir)
+        else:
+            subprocess.run(f"{self.run_cmd} '{self.bash_cmd}'", shell=True, check=True, cwd=self.repo_dir)

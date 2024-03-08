@@ -4,8 +4,9 @@ import click
 from rich import box
 from rich.console import Console
 from rich.table import Table
+from src.client import PyPiClient
 from src.managers.docker import DockerManager
-from src.managers.package import Client, Package
+from src.managers.package import Package
 from src.managers.repository import RepositoryManager
 from src.parsers.text import TextParser
 from src.parsers.toml import TomlParser
@@ -29,7 +30,7 @@ def start(
     repo_url,
     branch_name,
 ):
-    client = Client("https://pypi.org/pypi")
+    client = PyPiClient()
 
     # clone the repository
     repository_manager = RepositoryManager(repo_url)
@@ -81,11 +82,14 @@ def start(
         repository_manager.get_repo_dir,
     )
 
-    run = docker.run_cmd()
-    bash = docker.bash_cmd()
+    docker.generate_run_command()
+    docker.generate_bash_command()
 
     console.print("\n")
-    console.print(f"The command below will be used to run a docker container:\n{run} '{bash}'", style="yellow1")
+    console.print(
+        f"The command below will be used to run a docker container:\n{docker.run_cmd} '{docker.bash_cmd}'",
+        style="yellow1",
+    )
     process = click.confirm("Do you want to continue with the above command?", default=True)
 
     if not process:
@@ -93,7 +97,7 @@ def start(
         exit()
 
     console.print("Running the docker image. This may take some time ...", style="yellow1")
-    docker.run(run, bash)
+    docker.run()
 
     # process the requirements-frozen.txt file as a FrozenParser object
     # it's used to lookup the package name and version installed in the docker image
@@ -120,7 +124,7 @@ def start(
     table.add_column("Status", style="bright_white")
 
     for dependency in dependencies:
-        c = client.get(dependency)
+        c = client.get_package(dependency)
         if isinstance(c, int):
             # deals with cases such as package names with [extras] in them
             messages.append(f"{dependency}")
@@ -166,7 +170,7 @@ def start(
 
     # development dependencies
     for dependency in dev_dependencies:
-        c = client.get(dependency)
+        c = client.get_package(dependency)
         if isinstance(c, int):
             # deals with cases such as package names with [extras] in them
             messages.append(f"{dependency}")

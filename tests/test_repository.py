@@ -9,8 +9,6 @@ def test_repository_manager_init(repo_content):
     repo_path = pathlib.Path(__file__).parent.parent / repo.repo_dir.name
 
     assert repo.repo_url == repo_content
-    # assert repo.dockerfile_name == ""
-    # assert repo.dockerfile_path == "./"
 
     # Test that the repository was cloned and the path is correct
     assert pathlib.Path(repo.repo_dir.name) == repo_path.absolute()

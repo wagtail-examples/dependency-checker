@@ -1,23 +1,23 @@
 from dataclasses import dataclass
 
 import packaging
-import requests
+
+# import requests
 from packaging.version import parse
 
+# class Client:
+#     def __init__(self, url):
+#         self.url = url
+#         self.session = requests.Session()
 
-class Client:
-    def __init__(self, url):
-        self.url = url
-        self.session = requests.Session()
-
-    def get(self, package_name):
-        response = self.session.get(f"{self.url}/{package_name}/json")
-        if response.status_code == 200:
-            # known package
-            return response
-        else:
-            # unknown package
-            return response.status_code
+#     def get(self, package_name):
+#         response = self.session.get(f"{self.url}/{package_name}/json")
+#         if response.status_code == 200:
+#             # known package
+#             return response
+#         else:
+#             # unknown package
+#             return response.status_code
 
 
 @dataclass

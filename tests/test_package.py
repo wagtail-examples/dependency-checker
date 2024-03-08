@@ -1,39 +1,4 @@
-from unittest.mock import Mock
-
-from src.managers.package import Client, Package
-
-
-# Client tests
-def test_get_known_package():
-    # OK response
-    url = "http://example.com"
-    package_name = "requests"
-    expected_status_code = 200
-    expected_response = Mock(status_code=expected_status_code)
-    session_mock = Mock()
-    session_mock.get.return_value = expected_response
-    client = Client(url)
-    client.session = session_mock
-
-    response = client.get(package_name)
-
-    assert response == expected_response
-
-
-def test_get_unknown_package():
-    # Not Found response
-    url = "http://example.com"
-    package_name = "nonexistent_package"
-    expected_status_code = 404
-    expected_response = expected_status_code
-    session_mock = Mock()
-    session_mock.get.return_value = Mock(status_code=expected_status_code)
-    client = Client(url)
-    client.session = session_mock
-
-    response = client.get(package_name)
-
-    assert response == expected_response
+from src.managers.package import Package
 
 
 # Package tests
