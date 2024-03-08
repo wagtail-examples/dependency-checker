@@ -50,6 +50,32 @@ class RepositoryManager:
             .strip()
         )
 
+    def get_branches(self):
+        branches = (
+            subprocess.run(
+                ["git", "branch", "--remote"],
+                cwd=self.repo_dir.name,
+                check=True,
+                capture_output=True,
+            )
+            .stdout.decode("utf-8")
+            .strip()
+            .split("\n")
+        )
+        branches_cleaned = []
+
+        for branch in branches:
+            branches_cleaned.append(branch.replace("origin/", "").strip())
+
+        branch_index = {}
+        for i, branch in enumerate(sorted(branches_cleaned), 1):
+            branch_name = branch
+            if branch == self.get_branch():
+                branch_name = f"{branch} ( DEFAULT )"
+            branch_index[i] = branch_name
+
+        return branch_index
+
     def change_branch(self, branch_name):
         try:
             return (

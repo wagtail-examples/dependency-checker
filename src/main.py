@@ -20,26 +20,26 @@ console = Console()
     prompt="Repository URL",
     help="The URL of the repository to clone.",
 )
-@click.option(
-    "--branch-name",
-    prompt="Branch name (optional)",
-    help="The name of the branch to checkout.",
-    default="master",
-)
-def start(
-    repo_url,
-    branch_name,
-):
+def start(repo_url):
     client = PyPiClient()
 
     # clone the repository
     repository_manager = RepositoryManager(repo_url)
 
-    if repository_manager.get_branch() != branch_name:
-        result = repository_manager.change_branch(branch_name)
-        if "Error" in result:
-            console.print(result, style="red1")
-            exit()
+    branches = repository_manager.get_branches()
+    console.print("Available branches:", style="yellow1")
+
+    for branch in branches.items():
+        if branch[0] < 10:
+            console.print(f" {branch[0]} {branch[1]}")
+        else:
+            console.print(f"{branch[0]} {branch[1]}")
+    choice = console.input("Enter a branch number for checkout: ")
+    if not choice or int(choice) not in branches:
+        console.print("Invalid branch number.", style="red1")
+        exit()
+    branch_name = branches[int(choice)]
+    repository_manager.change_branch(branch_name)
 
     docker_files = repository_manager.find_docker_files()
 
