@@ -92,27 +92,8 @@ class RepositoryManager:
             content = f.read().split("\n")
 
         # parse this with a regex e.g. 'FROM python:3.9-buster as production'
-        pattern = r"^FROM python:(.*?)"
-        # result would be python:3.9-buster
-
-        for line in content:
-
-            if line.startswith("#"):
-                continue  # ignore comments
-
-            match = re.search(pattern, line)
-
-            if match:
-                image = line.split(" ")[1].strip()
-                self.docker_image = image
-
-    def parse_poetry_version(self):
-        with open(self.dockerfile_path) as f:
-            content = f.read().split("\n")
-
-        # parse this with a regex e.g. ARG POETRY_VERSION=1.4.2
-        pattern = r"^ARG POETRY_VERSION=(.*?)"
-        # result would be ARG POETRY_VERSION=1.4.2
+        pattern = r"^FROM.*?(python:?\d*\.*\d*\.*?).*"
+        # result would be python:3.9
 
         for line in content:
 
@@ -122,5 +103,25 @@ class RepositoryManager:
             match = re.search(pattern, line)
 
             if match:
-                version = line.split("=")[1].strip()
+                image = match.group(1)
+                self.docker_image = image
+                break
+
+    def parse_poetry_version(self):
+        with open(self.dockerfile_path) as f:
+            content = f.read().split("\n")
+
+        # parse this with a regex e.g. ARG POETRY_VERSION=1.4.2
+        pattern = r"^ARG.*?POETRY_VERSION=(.*)"
+        # result would be 1.4.2
+
+        for line in content:
+
+            if line.startswith("#"):
+                continue
+
+            match = re.search(pattern, line)
+
+            if match:
+                version = match.group(1)
                 self.poetry_version = version
