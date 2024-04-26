@@ -138,28 +138,16 @@ def start(repo_url, report):
     table.add_row("Docker Image", repository_manager.docker_image)
     console.print(table)
 
-    # if report:
-    #     # html table report preparation
-
-    #     with open("report_header.html") as header:
-    #         report_header = header.read()
-
-    #     report_template.write(report_header)
-    #     # with open("report.html", "w") as report_template:
-    #     #     report_template.write(report_header)
-
-    #     # the info section of the report
-    #     report_template.write("<h2>Repository Information</h2>")
-    #     info_table = DataFrame()
-    #     info_table["Repository URL"] = [repository_manager.repo_url]
-    #     info_table["Branch Name"] = [repository_manager.get_branch()]
-    #     info_table["Dockerfile Path"] = [repository_manager.dockerfile_path]
-    #     info_table["Poetry Version"] = [repository_manager.poetry_version]
-    #     info_table["Docker Image"] = [repository_manager.docker_image]
-
-    #     report_template.write(info_table.to_html(index=False))
-
-    #     report_template.close()
+    if report:
+        reporter.add_info_data(
+            {
+                "Repository URL": repository_manager.repo_url,
+                "Branch Name": repository_manager.get_branch(),
+                "Dockerfile Path": repository_manager.dockerfile_path,
+                "Poetry Version": repository_manager.poetry_version,
+                "Docker Image": repository_manager.docker_image,
+            }
+        )
 
     console.print("Analyzing the dependencies ...", style="cyan1")
 
@@ -187,10 +175,6 @@ def start(repo_url, report):
     table.add_column("Latest Version", style="bright_white")
     table.add_column("Status", style="bright_white")
 
-    # if report:
-    #     report_template = open("report.html", "a")
-    #     report_template.write("<h2>Production Dependencies</h2>")
-
     for dependency in dependencies:
         c = client.get_package(dependency)
         if isinstance(c, int):
@@ -200,13 +184,6 @@ def start(repo_url, report):
         package = Package(c.json())
 
         production_packages.append(package)
-
-    # if report:
-    #     report_production_table = DataFrame()
-    #     report_production_table["Package"] = []
-    #     report_production_table["Installed Version"] = []
-    #     report_production_table["Latest Version"] = []
-    #     report_production_table["Status"] = []
 
     for package in production_packages:
         name = package.name
@@ -232,20 +209,16 @@ def start(repo_url, report):
             frozen_version = f"{frozen_version.split('@')[0]} TAG {frozen_version.split('@')[1]}"
 
         table.add_row(name, frozen_version, latest_version, status, style=style)
-        # if report:
-        #     report_production_table = report_production_table.append(
-        #         {
-        #             "Package": name,
-        #             "Installed Version": frozen_version,
-        #             "Latest Version": latest_version,
-        #             "Status": status,
-        #         },
-        #         ignore_index=True,
-        #     )
 
-    # if report:
-    #     report_template.write(report_production_table.to_html(index=False))
-    #     report_template.close()
+        if report:
+            reporter.add_production_data(
+                {
+                    "Package": name,
+                    "Installed Version": frozen_version,
+                    "Latest Version": latest_version,
+                    "Status": status,
+                }
+            )
 
     console.print(table)
 
@@ -290,4 +263,16 @@ def start(repo_url, report):
 
         table.add_row(name, frozen_version, latest_version, status, style=style)
 
+        if report:
+            reporter.add_development_data(
+                {
+                    "Package": name,
+                    "Installed Version": frozen_version,
+                    "Latest Version": latest_version,
+                    "Status": status,
+                }
+            )
+
     console.print(table)
+
+    reporter.write_report()
