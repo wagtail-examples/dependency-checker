@@ -36,7 +36,7 @@ def test_repository_manager_init(repo_content):
 
     repo.dockerfile_path = repo.find_docker_files()[0]
     repo.parse_docker_image()
-    assert repo.docker_image == "python:3.11-slim-bullseye"
+    assert repo.docker_image == "python:3.11"
 
     repo.parse_poetry_version()
     assert repo.poetry_version == "1.3.2"
