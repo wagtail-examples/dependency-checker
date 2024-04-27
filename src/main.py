@@ -11,8 +11,10 @@ from src.managers.package import Package
 from src.managers.repository import RepositoryManager
 from src.parsers.text import TextParser
 from src.parsers.toml import TomlParser
+from src.reporters.html import HTMLReporter
 
 console = Console()
+reporter = HTMLReporter()
 
 
 @click.command()
@@ -21,7 +23,13 @@ console = Console()
     prompt="Repository URL",
     help="The URL of the repository to clone.",
 )
-def start(repo_url):
+@click.option(
+    "--report",
+    "-r",
+    is_flag=True,
+    help="Generate a printable report.",
+)
+def start(repo_url, report):
     console.clear()
     console.print("Welcome to the Dependency Checker.", style="bright_white")
     console.print(
@@ -130,6 +138,17 @@ def start(repo_url):
     table.add_row("Docker Image", repository_manager.docker_image)
     console.print(table)
 
+    if report:
+        reporter.add_info_data(
+            {
+                "Repository URL": repository_manager.repo_url,
+                "Branch Name": repository_manager.get_branch(),
+                "Dockerfile Path": repository_manager.dockerfile_path,
+                "Poetry Version": repository_manager.poetry_version,
+                "Docker Image": repository_manager.docker_image,
+            }
+        )
+
     console.print("Analyzing the dependencies ...", style="cyan1")
 
     # process the requirements-frozen.txt file as a FrozenParser object
@@ -191,6 +210,16 @@ def start(repo_url):
 
         table.add_row(name, frozen_version, latest_version, status, style=style)
 
+        if report:
+            reporter.add_production_data(
+                {
+                    "Package": name,
+                    "Installed Version": frozen_version,
+                    "Latest Version": latest_version,
+                    "Status": status,
+                }
+            )
+
     console.print(table)
 
     # development dependencies
@@ -234,4 +263,17 @@ def start(repo_url):
 
         table.add_row(name, frozen_version, latest_version, status, style=style)
 
+        if report:
+            reporter.add_development_data(
+                {
+                    "Package": name,
+                    "Installed Version": frozen_version,
+                    "Latest Version": latest_version,
+                    "Status": status,
+                }
+            )
+
     console.print(table)
+
+    if report:
+        reporter.write_report()

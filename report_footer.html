@@ -1,0 +1,30 @@
+</div>
+</main>
+<footer>
+    <div class="container">
+        <p>Made with <a href="https://github.com/wagtail-examples/dependency-checker">Dependency Checker</a></p>
+    </div>
+</footer>
+<script>
+    // set the radio buttons
+    const theme = localStorage.getItem('theme');
+    if (theme) {
+        // set the document theme
+        document.documentElement.setAttribute('data-theme', theme);
+        // set the radio button
+        document.querySelector(`input[data-theme="${theme}"]`).checked = true;
+    }
+    // add event listeners to the radio buttons
+    document.querySelectorAll('input[name="theme"]').forEach((input) => {
+        input.addEventListener('change', (event) => {
+            // get the theme from the radio button
+            const theme = event.target.getAttribute('data-theme');
+            // set the document theme
+            document.documentElement.setAttribute('data-theme', theme);
+            // set the theme in local storage
+            localStorage.setItem('theme', theme);
+        });
+    });
+</script>
+</body>
+</html>

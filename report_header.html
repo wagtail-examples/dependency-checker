@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dependency Checker</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/gutenberg-css@0.7" media="print">
+    <style>
+        @media print {
+            :root {
+                font-size: 60%;
+            }
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                max-width: 100%;
+            }
+            #theme-switcher {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="grid">
+                <div class="grid">
+                    <h1>Dependency Checker Report</h1>
+                    <fieldset class="grid" style="display: flex;">
+                        <label>
+                            <input type="radio" name="theme" data-theme="light" />
+                            Light
+                        </label>
+                        <label>
+                            <input type="radio" name="theme" data-theme="dark" />
+                            Dark
+                        </label>
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+    </header>
+    <hr>
+    <main>
