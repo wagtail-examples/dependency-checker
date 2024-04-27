@@ -27,7 +27,7 @@ reporter = HTMLReporter()
     "--report",
     "-r",
     is_flag=True,
-    help="Generate a report of the dependencies.",
+    help="Generate a printable report.",
 )
 def start(repo_url, report):
     console.clear()
@@ -275,4 +275,5 @@ def start(repo_url, report):
 
     console.print(table)
 
-    reporter.write_report()
+    if report:
+        reporter.write_report()

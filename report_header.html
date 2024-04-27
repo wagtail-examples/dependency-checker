@@ -6,6 +6,24 @@
     <title>Dependency Checker</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/gutenberg-css@0.7" media="print">
+    <style>
+        @media print {
+            :root {
+                font-size: 60%;
+            }
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                max-width: 100%;
+            }
+            #theme-switcher {
+                display: none !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
