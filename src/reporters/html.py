@@ -32,52 +32,71 @@ class HTMLReporter:
     def add_development_data(self, data: dict) -> None:
         self.development_data.append(data)
 
+    def _heading(self, heading: str) -> str:
+        return f"<h2>{heading}</h2>\n"
+
+    def _open_table(self, cls: str) -> str:
+        if not cls:
+            cls = "striped"
+        return f"<table class='{cls}'>\n"
+
+    def _close_table(self) -> str:
+        return "</table>\n"
+
+    def _table_header(self, headers: list) -> str:
+        header = "<thead><tr>"
+        for h in headers:
+            header += f"<th>{h}</th>"
+        header += "</tr></thead>"
+        return header
+
+    def _table_dependency_row(self, data: dict, status_class: str) -> str:
+        return f"""
+            <tr>
+                <td><span class='{status_class}'>{data['Package']}</span></td>
+                <td>{data['Installed Version']}</td>
+                <td>{data['Latest Version']}</td>
+                <td><span class='{status_class}'>{data['Status']}</span></td>
+            </tr>"""
+
+    def _gather_status_class(self, data: list) -> str:
+        status_class = "pico-color-red-500"
+        if data["Status"] == "Check":
+            status_class = "pico-color-cyan-500"
+        elif data["Status"] == "Outdated":
+            status_class = "pico-color-orange-500"
+        elif data["Status"] == "OK":
+            status_class = "pico-color-green-500"
+        return status_class
+
     def write_report(self):
         self.report += self.report_header
 
-        info_section = "<h2>Info</h2>\n"
-        info_section += "<table class='striped'>\n"
+        info_section = self._heading("Info")
+        info_section += self._open_table("striped")
         for key, value in self.info_data.items():
             info_section += f"<tr><th>{key}</th><td>{value}</td></tr>"
-        info_section += "</table>"
+        info_section += self._close_table()
         self.report += "<section><div class='container'>" + info_section + "</div></section>"
 
         self.report += "<hr>"
 
-        production_section = "<h2>Production Dependencies</h2>"
-        production_section += "<table class='striped'>"
-        production_section += (
-            "<thead><tr><th>Package</th><th>Installed Version</th><th>Latest Version</th><th>Status</th></tr></thead>"
-        )
+        production_section = self._heading("Production Dependencies")
+        production_section += self._open_table("striped")
+        production_section += self._table_header(["Package", "Installed Version", "Latest Version", "Status"])
         for data in self.production_data:
-            status_class = "pico-color-red-500"
-            if data["Status"] == "Check":
-                status_class = "pico-color-cyan-500"
-            elif data["Status"] == "Outdated":
-                status_class = "pico-color-orange-500"
-            elif data["Status"] == "OK":
-                status_class = "pico-color-green-500"
-            production_section += f"<tr><td><span class='{status_class}'>{data['Package']}</span></td><td>{data['Installed Version']}</td><td>{data['Latest Version']}</td><td><span class='{status_class}'>{data['Status']}</span></td></tr>"  # noqa
-        production_section += "</table>"
+            production_section += self._table_dependency_row(data, self._gather_status_class(data))
+        production_section += self._close_table()
         self.report += "<section><div class='container'>" + production_section + "</div></section>"
 
         self.report += "<hr>"
 
-        development_section = "<h2>Development Dependencies</h2>"
-        development_section += "<table class='striped'>"
-        development_section += (
-            "<thead><tr><th>Package</th><th>Installed Version</th><th>Latest Version</th><th>Status</th></tr></thead>"
-        )
+        development_section = self._heading("Development Dependencies")
+        development_section += self._open_table("striped")
+        development_section += self._table_header(["Package", "Installed Version", "Latest Version", "Status"])
         for data in self.development_data:
-            status_class = "pico-color-red-500"
-            if data["Status"] == "Check":
-                status_class = "pico-color-cyan-500"
-            elif data["Status"] == "Outdated":
-                status_class = "pico-color-orange-500"
-            elif data["Status"] == "OK":
-                status_class = "pico-color-green-500"
-            development_section += f"<tr><td><span class='{status_class}'>{data['Package']}</span></td><td>{data['Installed Version']}</td><td>{data['Latest Version']}</td><td><span class='{status_class}'>{data['Status']}</span></td></tr>"  # noqa
-        development_section += "</table>"
+            development_section += self._table_dependency_row(data, self._gather_status_class(data))
+        development_section += self._close_table()
         self.report += "<section><div class='container'>" + development_section + "</div></section>"
 
         self.report += "<hr>"
