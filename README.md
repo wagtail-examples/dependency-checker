@@ -1,6 +1,14 @@
-# Dependency version checker for Python
+# Python dependency version checker
 
 ![Icon](./docs/icon.png?raw=true "Icon")
+
+## Why use this tool?
+
+If you are using Poetry for python dependency management it can help you to decide if you need to update a dependency or not.
+
+e.g. your `pyproject.toml` file may have a version range specified, but it may not be clear if the version in the lock file is the latest allowed by your range in the pyproject.toml file
+
+You could run poetry show [dependency] to get the installed version, then pop over to PyPi to check the latest version but if you have a lot of dependencies, this can be time-consuming, so let this tool do it for you.
 
 ## Installation
 
@@ -18,7 +26,6 @@ Steps:
 - Enter the url for your repository
 - Choose the branch to checkout and run the report on
 - If multiple Dockerfiles are found, choose the one to inspect
-
 
 ## Options
 
