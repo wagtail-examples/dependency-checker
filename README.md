@@ -29,6 +29,7 @@ poetry run start --help
 ```
 
 - `--repo-url` - The URL of the repository to clone/check
+- `--report` - Output a printable report to a file (report.html)
 
 ## Limitations
 
