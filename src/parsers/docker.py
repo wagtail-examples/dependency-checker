@@ -47,10 +47,13 @@ class DockerFileParser:
         pattern = r"^ARG POETRY_VERSION=(.*?)"
         # result would be ARG POETRY_VERSION=1.4.2
 
+        poetry_version = None
+
         for line in content:
             if line.startswith("#"):
                 continue
             match = re.search(pattern, line)
             if match:
                 poetry_version = line.split("=")[1].strip()
-                return poetry_version
+
+        return poetry_version

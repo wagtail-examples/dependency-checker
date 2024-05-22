@@ -95,6 +95,8 @@ class RepositoryManager:
         pattern = r"^FROM.*?(python:?\d*\.*\d*\.*?).*"
         # result would be python:3.9
 
+        python_image = None
+
         for line in content:
 
             if line.startswith("#"):
@@ -104,8 +106,10 @@ class RepositoryManager:
 
             if match:
                 image = match.group(1)
-                self.docker_image = image
+                python_image = image
                 break
+
+        self.docker_image = python_image
 
     def parse_poetry_version(self):
         with open(self.dockerfile_path) as f:
@@ -114,6 +118,8 @@ class RepositoryManager:
         # parse this with a regex e.g. ARG POETRY_VERSION=1.4.2
         pattern = r"^ARG.*?POETRY_VERSION=(.*)"
         # result would be 1.4.2
+
+        poetry_version = None
 
         for line in content:
 
@@ -124,4 +130,6 @@ class RepositoryManager:
 
             if match:
                 version = match.group(1)
-                self.poetry_version = version
+                poetry_version = version
+
+        self.poetry_version = poetry_version

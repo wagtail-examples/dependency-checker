@@ -80,7 +80,18 @@ def start(repo_url, report):
         repository_manager.dockerfile_path = str(pathlib.Path(docker_files[0]).absolute())
 
     repository_manager.parse_docker_image()
+    docker_image = repository_manager.docker_image
+
+    if not docker_image:
+        console.print("Unable to determine the base image from the Dockerfile.", style="red1")
+        docker_image = click.prompt("Enter a valid Docker image to use e.g. python:3.11", type=str)
+
     repository_manager.parse_poetry_version()
+    poetry_version = repository_manager.poetry_version
+
+    if not poetry_version:
+        console.print("Unable to determine the poetry version from the Dockerfile.", style="red1")
+        poetry_version = click.prompt("Enter a valid Poetry version to use e.g. 1.8.2", type=str)
 
     table = Table(title="Repository Information", box=box.MARKDOWN, show_lines=True)
     table.add_column("", style="bright_white")
@@ -88,8 +99,8 @@ def start(repo_url, report):
     table.add_row("Repository URL", repository_manager.repo_url)
     table.add_row("Branch Name", repository_manager.get_branch())
     table.add_row("Dockerfile Path", repository_manager.dockerfile_path)
-    table.add_row("Poetry Version", repository_manager.poetry_version)
-    table.add_row("Docker Image", repository_manager.docker_image)
+    table.add_row("Poetry Version", poetry_version)
+    table.add_row("Docker Image", docker_image)
     console.print(table)
 
     process = click.confirm("Do you want to continue with the above details?", default=True)
@@ -102,8 +113,8 @@ def start(repo_url, report):
 
     # run the docker image
     docker = DockerManager(
-        repository_manager.docker_image,
-        repository_manager.poetry_version,
+        docker_image,
+        poetry_version,
         repository_manager.get_repo_dir,
     )
 
@@ -134,8 +145,8 @@ def start(repo_url, report):
     table.add_row("Repository URL", repository_manager.repo_url)
     table.add_row("Branch Name", repository_manager.get_branch())
     table.add_row("Dockerfile Path", repository_manager.dockerfile_path)
-    table.add_row("Poetry Version", repository_manager.poetry_version)
-    table.add_row("Docker Image", repository_manager.docker_image)
+    table.add_row("Poetry Version", poetry_version)
+    table.add_row("Docker Image", docker_image)
     console.print(table)
 
     if report:
