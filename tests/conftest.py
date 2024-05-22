@@ -13,7 +13,7 @@ def typical_dockerfile_content():
 
     with open(base_dir / "tests/test_files/Dockerfile", "r") as f:
         return f.read()
-    
+
 
 @pytest.fixture
 def unexpected_dockerfile_content():

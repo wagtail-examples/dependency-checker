@@ -108,9 +108,8 @@ class RepositoryManager:
                 image = match.group(1)
                 python_image = image
                 break
-        
+
         self.docker_image = python_image
-        
 
     def parse_poetry_version(self):
         with open(self.dockerfile_path) as f:
