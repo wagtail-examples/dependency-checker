@@ -20,6 +20,15 @@ def test_match_docker_poetry_version(dockerfile_fixture):
     assert poetry_version == "1.3.2"
 
 
+def test_match_docker_poetry_not_found(dockerfile_fixture_no_poetry):
+    """Test that the parser returns None if poetry is not found"""
+
+    parser = DockerFileParser(dockerfile_fixture_no_poetry)
+    poetry_version = parser.get_poetry_version()
+
+    assert poetry_version is None
+
+
 def test_docker_parser_file_error():
     """Test that the parser can handle a file not found error"""
 
