@@ -19,6 +19,7 @@ reporter = HTMLReporter()
 
 def check_remote(repo_url, report):
     console.clear()
+
     console.print("Welcome to the Dependency Checker.", style="bright_white")
     console.print(
         "This tool will help you analyze the python dependencies used in a Docker image.", style="bright_white"
@@ -30,19 +31,13 @@ def check_remote(repo_url, report):
     # clone the repository
     repository_manager = RepositoryManager(repo_url)
 
+    # get and display the available branches
     branches = repository_manager.get_branches()
     console.print("")
     console.print("Available branches:", style="yellow1")
+    console.print(Columns(get_branch_data(branches), equal=True, expand=True, column_first=True, padding=(0, 0)))
 
-    column_data = []
-    for branch in branches.items():
-        if branch[0] < 10:
-            column_data.append(f" {branch[0]} {branch[1]}")
-        else:
-            column_data.append(f"{branch[0]} {branch[1]}")
-    columns = Columns(column_data, equal=True, expand=True, column_first=True, padding=(0, 0))
-    console.print(columns)
-
+    # choose a branch name by index
     console.print("")
     choice = console.input("Enter the branch number of the branch you'd like to analyse: ")
     if not choice or int(choice) not in branches:
@@ -53,27 +48,36 @@ def check_remote(repo_url, report):
 
     console.clear()
 
+    # find the docker files in the repository
     docker_files = repository_manager.find_docker_files()
 
     if len(docker_files) == 0:
+        # exit if no Dockerfile is found
         console.print("No Dockerfile found in the repository.", style="red1")
         exit()
 
     if len(docker_files) > 1:
+        # choose a Dockerfile if multiple are found
         choices = [f"{i}. {docker_file.name}" for i, docker_file in enumerate(docker_files, 1)]
         choices = "\n".join(choices)
         choice = console.input(f"Multiple Dockerfiles found. Please choose one:\n{choices}\n")
         repository_manager.dockerfile_path = str(pathlib.Path(docker_files[int(choice) - 1]).absolute())
     else:
+        # use the only Dockerfile found
         repository_manager.dockerfile_path = str(pathlib.Path(docker_files[0]).absolute())
 
+    # parse the Dockerfile to get the base image
     repository_manager.parse_docker_image()
     docker_image = repository_manager.docker_image
 
     if not docker_image:
+        # prompt for a Docker image if not found or it cannot be parsed
         console.print("Unable to determine the base image from the Dockerfile.", style="red1")
         docker_image = click.prompt("Enter a valid Docker image to use e.g. python:3.11", type=str)
 
+    # parse the poetry version from the Dockerfile
+    # we need the version to install poetry the same version in the Docker image
+    # the same version may not be required but doing it anyway
     repository_manager.parse_poetry_version()
     poetry_version = repository_manager.poetry_version
 
@@ -81,15 +85,7 @@ def check_remote(repo_url, report):
         console.print("Unable to determine the poetry version from the Dockerfile.", style="red1")
         poetry_version = click.prompt("Enter a valid Poetry version to use e.g. 1.8.2", type=str)
 
-    table = Table(title="Repository Information", box=box.MARKDOWN, show_lines=True)
-    table.add_column("", style="bright_white")
-    table.add_column("Details", style="bright_white")
-    table.add_row("Repository URL", repository_manager.repo_url)
-    table.add_row("Branch Name", repository_manager.get_branch())
-    table.add_row("Dockerfile Path", repository_manager.dockerfile_path)
-    table.add_row("Poetry Version", poetry_version)
-    table.add_row("Docker Image", docker_image)
-    console.print(table)
+    console.print(information_table(repository_manager, docker_image, poetry_version))
 
     process = click.confirm("Do you want to continue with the above details?", default=True)
 
@@ -126,16 +122,16 @@ def check_remote(repo_url, report):
 
     console.clear()
 
-    console.print("")
-    table = Table(title="Repository Information", box=box.MARKDOWN, show_lines=True)
-    table.add_column("", style="bright_white")
-    table.add_column("Details", style="bright_white")
-    table.add_row("Repository URL", repository_manager.repo_url)
-    table.add_row("Branch Name", repository_manager.get_branch())
-    table.add_row("Dockerfile Path", repository_manager.dockerfile_path)
-    table.add_row("Poetry Version", poetry_version)
-    table.add_row("Docker Image", docker_image)
-    console.print(table)
+    console.print(information_table(repository_manager, docker_image, poetry_version))
+    # table = Table(title="Repository Information", box=box.MARKDOWN, show_lines=True)
+    # table.add_column("", style="bright_white")
+    # table.add_column("Details", style="bright_white")
+    # table.add_row("Repository URL", repository_manager.repo_url)
+    # table.add_row("Branch Name", repository_manager.get_branch())
+    # table.add_row("Dockerfile Path", repository_manager.dockerfile_path)
+    # table.add_row("Poetry Version", poetry_version)
+    # table.add_row("Docker Image", docker_image)
+    # console.print(table)
 
     if report:
         reporter.add_info_data(
@@ -276,3 +272,25 @@ def check_remote(repo_url, report):
 
     if report:
         reporter.write_report()
+
+
+def information_table(repository_manager, docker_image, poetry_version):
+    table = Table(title="Repository Information", box=box.MARKDOWN, show_lines=True)
+    table.add_column("", style="bright_white")
+    table.add_column("Details", style="bright_white")
+    table.add_row("Repository URL", repository_manager.repo_url)
+    table.add_row("Branch Name", repository_manager.get_branch())
+    table.add_row("Dockerfile Path", repository_manager.dockerfile_path)
+    table.add_row("Poetry Version", poetry_version)
+    table.add_row("Docker Image", docker_image)
+    return table
+
+
+def get_branch_data(branches):
+    column_data = []
+    for branch in branches.items():
+        if branch[0] < 10:
+            column_data.append(f" {branch[0]} {branch[1]}")
+        else:
+            column_data.append(f"{branch[0]} {branch[1]}")
+    return column_data
