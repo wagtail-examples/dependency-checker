@@ -16,11 +16,30 @@ def typical_dockerfile_content():
 
 
 @pytest.fixture
+def unexpected_dockerfile_content():
+    """Return the content of a typical Dockerfile for testing"""
+
+    with open(base_dir / "tests/test_files/DockerfileNoPoetry", "r") as f:
+        return f.read()
+
+
+@pytest.fixture
 def dockerfile_fixture(typical_dockerfile_content, tmp_path):
     """Create a dockerfile with content for testing"""
 
     dockerfile = tmp_path / "Dockerfile"
     lines = typical_dockerfile_content.split("\n")
+    dockerfile.write_text("\n".join(lines))
+
+    return dockerfile
+
+
+@pytest.fixture
+def dockerfile_fixture_no_poetry(unexpected_dockerfile_content, tmp_path):
+    """Create a dockerfile with content for testing"""
+
+    dockerfile = tmp_path / "Dockerfile"
+    lines = unexpected_dockerfile_content.split("\n")
     dockerfile.write_text("\n".join(lines))
 
     return dockerfile
