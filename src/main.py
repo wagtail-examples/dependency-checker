@@ -17,7 +17,12 @@ console = Console()
 reporter = HTMLReporter()
 
 
-@click.command()
+@click.group()
+def cli():
+    """Dependency Checker CLI tool."""
+
+
+@cli.command()
 @click.option(
     "--repo-url",
     prompt="Repository URL",
@@ -29,7 +34,8 @@ reporter = HTMLReporter()
     is_flag=True,
     help="Generate a printable report.",
 )
-def start(repo_url, report):
+def remote(repo_url, report):
+    """Analyze the dependencies of a remote repository."""
     console.clear()
     console.print("Welcome to the Dependency Checker.", style="bright_white")
     console.print(
