@@ -72,15 +72,6 @@ class HTMLReporter:
     def write_report(self):
         self.report += self.report_header
 
-        info_section = self._heading("Info")
-        info_section += self._open_table("striped")
-        for key, value in self.info_data.items():
-            info_section += f"<tr><th>{key}</th><td>{value}</td></tr>"
-        info_section += self._close_table()
-        self.report += "<section><div class='container'>" + info_section + "</div></section>"
-
-        self.report += "<hr>"
-
         production_section = self._heading("Production Dependencies")
         production_section += self._open_table("striped")
         production_section += self._table_header(["Package", "Installed Version", "Latest Version", "Status"])
@@ -98,6 +89,15 @@ class HTMLReporter:
             development_section += self._table_dependency_row(data, self._gather_status_class(data))
         development_section += self._close_table()
         self.report += "<section><div class='container'>" + development_section + "</div></section>"
+
+        self.report += "<hr>"
+
+        info_section = self._heading("Branch Information")
+        info_section += self._open_table("striped")
+        for key, value in self.info_data.items():
+            info_section += f"<tr><th>{key}</th><td>{value}</td></tr>"
+        info_section += self._close_table()
+        self.report += "<section><div class='container'>" + info_section + "</div></section>"
 
         self.report += "<hr>"
 
