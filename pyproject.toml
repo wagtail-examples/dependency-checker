@@ -27,7 +27,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-start = "src.main:start"
+check = "src.main:cli"
 
 [tool.pytest.ini_options]
 addopts = "-ra -q --cov=src --cov-report=term-missing --cov-report=html"

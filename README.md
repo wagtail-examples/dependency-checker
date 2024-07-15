@@ -18,25 +18,28 @@ Clone this repository and run the following commands in the root of the project:
 
 ```bash
 poetry install
-poetry run start
+poetry run check [-r] [local or remote]
 ```
 
 Steps:
 
-- Enter the url for your repository
+- Enter the url for your remote repository or the path to your local repository
 - Choose the branch to checkout and run the report on
 - If multiple Dockerfiles are found, choose the one to inspect
 
 ## Options
 
-Options can be passed in as command line arguments or enter them when prompted.
+- `-r` - Output a printable report to a file (report.html)
+- `local` - Check a local repository (a folder relative to the directory this script is run from)
+- `remote` - Check a remote repository
+
+Command help is available:
 
 ```bash
-poetry run start --help
+poetry run check --help
+poetry run check remote --help
+poetry run check local --help
 ```
-
-- `--repo-url` - The URL of the repository to clone/check
-- `--report` - Output a printable report to a file (report.html)
 
 ## Limitations
 
@@ -50,11 +53,13 @@ poetry run start --help
 
 It will do the following:
 
-- clone the repository and checkout the specified branch
-- inspect the Dockerfile to find the image version and poetry version used
+- clone the repository and checkout the specified branch for a remote repository
+- analyse the local folder if running against a local repository
+- find & inspect the Dockerfile to find the docker image version and poetry version used
 - build a new image based on the Dockerfile image and export the dependency list using poetry export -> requirements-frozen.txt
 - compare each dependency version in requirements-frozen.txt with the latest version on PyPi if it is listed in the pyproject.toml file
 - output the results in the console and indicate if there are any outdated dependencies and/or manual checks required
+- optionally output a report to a file
 
 e.g. Console output
 
