@@ -11,7 +11,7 @@ from src.helpers import (
     package_table_row,
 )
 from src.managers.docker import DockerManager
-from src.managers.repository import RepositoryManager
+from src.managers.repository import RepositoryManagerRemote as RepositoryManager
 from src.parsers.text import TextParser
 from src.parsers.toml import TomlParser
 from src.reporters.html import HTMLReporter
