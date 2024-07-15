@@ -128,25 +128,13 @@ def check_remote(repo_url, report):
     # it's used to lookup the package name and version specified in the pyproject.toml file
     toml = TomlParser(pathlib.Path(repository_manager.get_repo_dir).absolute() / "pyproject.toml")
 
-    dependencies = sorted(toml.dependencies.keys())
-    dev_dependencies = sorted(toml.dev_dependencies.keys())
-
     messages = []
 
     # production dependencies
-    table = dependency_table_header()
+    dependencies = sorted(toml.dependencies.keys())
+    table = dependency_table_header(title="Production Dependencies")
 
-    production_packages = []
-
-    for dependency in dependencies:
-        c = client.get_package(dependency)
-        if isinstance(c, int):
-            # deals with cases such as package names with [extras] in them
-            messages.append(f"{dependency}")
-            continue
-        package = Package(c.json())
-
-        production_packages.append(package)
+    production_packages = get_packages(client, dependencies, messages)
 
     for package in production_packages:
         name = package.name
@@ -186,20 +174,10 @@ def check_remote(repo_url, report):
     console.print(table, new_line_start=True)
 
     # development dependencies
-    table = dependency_table_header()
+    dev_dependencies = sorted(toml.dev_dependencies.keys())
+    table = dependency_table_header(title="Development Dependencies")
 
-    development_packages = []
-
-    for dependency in dev_dependencies:
-        c = client.get_package(dependency)
-        if isinstance(c, int):
-            # deals with cases such as package names with [extras] in them
-            messages.append(f"{dependency}")
-            continue
-
-        package = Package(c.json())
-
-        development_packages.append(package)
+    development_packages = get_packages(client, dev_dependencies, messages)
 
     for package in development_packages:
         name = package.name
@@ -240,8 +218,23 @@ def check_remote(repo_url, report):
         reporter.write_report()
 
 
-def dependency_table_header():
-    table = Table(title="Production Dependencies", box=box.MARKDOWN, show_lines=True)
+def get_packages(client, dependencies, messages):
+    packages = []
+
+    for dependency in dependencies:
+        c = client.get_package(dependency)
+        if isinstance(c, int):
+            # deals with cases such as package names with [extras] in them
+            messages.append(f"{dependency}")
+            continue
+        package = Package(c.json())
+
+        packages.append(package)
+    return packages
+
+
+def dependency_table_header(title):
+    table = Table(title=title, box=box.MARKDOWN, show_lines=True)
     table.add_column("Package", style="bright_white")
     table.add_column("Installed Version", style="bright_white")
     table.add_column("Latest Version", style="bright_white")
