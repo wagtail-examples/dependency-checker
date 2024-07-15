@@ -107,17 +107,6 @@ def check_remote(repo_url, report):
 
     console.clear()
 
-    if report:
-        reporter.add_info_data(
-            {
-                "Repository URL": repository_manager.repo_url,
-                "Branch Name": repository_manager.get_branch(),
-                "Dockerfile Path": repository_manager.dockerfile_path,
-                "Poetry Version": repository_manager.poetry_version,
-                "Docker Image": repository_manager.docker_image,
-            }
-        )
-
     console.print("Analyzing the dependencies ...", style="cyan1")
 
     # process the requirements-frozen.txt file as a FrozenParser object
@@ -137,27 +126,7 @@ def check_remote(repo_url, report):
     production_packages = get_packages(client, dependencies, messages)
 
     for package in production_packages:
-        name = package.name
-        latest_version = package.latest_version
-        frozen_version = frozen.dependencies.get(name.lower())
-        if frozen_version and frozen_version != latest_version:
-            if "git+https://" in frozen_version:
-                status = "Check"
-                style = "red1"
-            else:
-                status = "Outdated"
-                style = "yellow1"
-        elif not frozen_version:
-            status = "Check"
-            style = "cyan1"
-            frozen_version = "Unable to determine version"
-        else:
-            status = "OK"
-            style = "green3"
-
-        if "git+https://" in frozen_version:
-            frozen_version = frozen_version.replace("git+https://", "")
-            frozen_version = f"{frozen_version.split('@')[0]} TAG {frozen_version.split('@')[1]}"
+        name, latest_version, frozen_version, status, style = package_table_row(frozen, package)
 
         table.add_row(name, frozen_version, latest_version, status, style=style)
 
@@ -180,23 +149,7 @@ def check_remote(repo_url, report):
     development_packages = get_packages(client, dev_dependencies, messages)
 
     for package in development_packages:
-        name = package.name
-        latest_version = package.latest_version
-        frozen_version = frozen.dependencies.get(name.lower())
-        if frozen_version and frozen_version != latest_version:
-            if "git+https://" in frozen_version:
-                status = "Check"
-                style = "bright_red"
-            else:
-                status = "Outdated"
-                style = "bright_yellow"
-        elif not frozen_version:
-            status = "Check"
-            style = "magenta"
-            frozen_version = "Unable to determine version"
-        else:
-            status = "OK"
-            style = "bright_green"
+        name, latest_version, frozen_version, status, style = package_table_row(frozen, package)
 
         table.add_row(name, frozen_version, latest_version, status, style=style)
 
@@ -215,7 +168,41 @@ def check_remote(repo_url, report):
     console.print(information_table(repository_manager, docker_image, poetry_version))
 
     if report:
+        reporter.add_info_data(
+            {
+                "Repository URL": repository_manager.repo_url,
+                "Branch Name": repository_manager.get_branch(),
+                "Dockerfile Path": repository_manager.dockerfile_path,
+                "Poetry Version": repository_manager.poetry_version,
+                "Docker Image": repository_manager.docker_image,
+            }
+        )
         reporter.write_report()
+
+
+def package_table_row(frozen, package):
+    name = package.name
+    latest_version = package.latest_version
+    frozen_version = frozen.dependencies.get(name.lower())
+    if frozen_version and frozen_version != latest_version:
+        if "git+https://" in frozen_version:
+            status = "Check"
+            style = "red1"
+        else:
+            status = "Outdated"
+            style = "yellow1"
+    elif not frozen_version:
+        status = "Check"
+        style = "cyan1"
+        frozen_version = "Unable to determine version"
+    else:
+        status = "OK"
+        style = "green3"
+
+    if "git+https://" in frozen_version:
+        frozen_version = frozen_version.replace("git+https://", "")
+        frozen_version = f"{frozen_version.split('@')[0]} TAG {frozen_version.split('@')[1]}"
+    return name, latest_version, frozen_version, status, style
 
 
 def get_packages(client, dependencies, messages):
