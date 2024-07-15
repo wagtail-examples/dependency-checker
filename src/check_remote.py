@@ -32,12 +32,11 @@ def check_remote(repo_url, report):
 
     # get and display the available branches
     branches = repository_manager.get_branches()
-    rich_console.print("")
-    rich_console.print("Available branches:", style="yellow1")
+
+    rich_console.print("Available branches:", style="yellow1", new_line_start=True)
     rich_console.print(Columns(get_branch_data(branches), equal=True, expand=True, column_first=True, padding=(0, 0)))
 
     # choose a branch name by index
-    rich_console.print("")
     choice = rich_console.input("Enter the branch number of the branch you'd like to analyse: ")
     if not choice or int(choice) not in branches:
         rich_console.print("Invalid branch number.", style="red1")
