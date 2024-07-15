@@ -82,21 +82,12 @@ def check_remote(repo_url, report):
 
     process = click.confirm("Do you want to continue with the above details?", default=True)
 
-    # console.clear()
-
     if not process:
         console.print("Exiting ...", style="red1")
         exit()
 
     # run the docker image
-    docker = DockerManager(
-        docker_image,
-        poetry_version,
-        repository_manager.get_repo_dir,
-    )
-
-    docker.generate_run_command()
-    docker.generate_bash_command()
+    docker = DockerManager(docker_image, poetry_version, repository_manager.get_repo_dir)
 
     console.print(
         f"Build & run a docker container with the following command:\n\n{docker.run_cmd}\n'{docker.bash_cmd}'\n",

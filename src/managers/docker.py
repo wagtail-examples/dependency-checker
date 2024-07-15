@@ -11,6 +11,10 @@ class DockerManager:
     run_cmd: str = field(init=False)
     bash_cmd: str = field(init=False)
 
+    def __post_init__(self):
+        self.generate_run_command()
+        self.generate_bash_command()
+
     def generate_run_command(self):
         cmd = [
             "docker run --name",
