@@ -65,7 +65,7 @@ class RepositoryManagerRemote(RepositoryManagerBase):
     """Class for managing remote repositories"""
 
     def __init__(self, repo_url):
-        super().__init__(self, repo_url)
+        super().__init__()
 
         self.repo_url = repo_url
         self.repo_dir = tempfile.TemporaryDirectory(
