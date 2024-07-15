@@ -1,14 +1,16 @@
+import pathlib
+
 import click
 from src.check_local import check_local
 from src.check_remote import check_remote
 
 
 @click.group()
-@click.version_option(version="0.1.0", prog_name="Dependency Checker")
+@click.version_option(version="0.1.0", prog_name="Python Dependency Checker")
 @click.option("--report", "-r", is_flag=True, help="Generate a printable report.")
 @click.pass_context
 def cli(ctx: click.Context, report: bool):
-    """Dependency Checker CLI tool."""
+    """Python Dependency Checker CLI tool."""
     ctx.ensure_object(dict)
     ctx.obj["report"] = report
 
@@ -26,4 +28,8 @@ def remote(ctx: click.Context, repo_url: str):
 @click.pass_context
 def local(ctx: click.Context, path: str):
     """Analyze the dependencies of a local repository"""
+    # check the path exists
+    if not pathlib.Path(path).exists():
+        click.echo("The path does not exist.")
+        exit()
     check_local(path, ctx.obj["report"])
