@@ -1,7 +1,7 @@
 import os
 import pathlib
 
-from src.managers.repository import RepositoryManager
+from src.managers.repository import RepositoryManagerRemote as RepositoryManager
 
 
 def test_repository_manager_init(repo_content):
