@@ -19,12 +19,7 @@ reporter = HTMLReporter()
 
 def check_remote(repo_url, report):
     console.clear()
-
-    console.print("Welcome to the Dependency Checker.", style="bright_white")
-    console.print(
-        "This tool will help you analyze the python dependencies used in a Docker image.", style="bright_white"
-    )
-    console.print("Please wait while we process the repository ...", style="cyan1")
+    console.print("Fetching the repository...", style="cyan1")
 
     client = PyPiClient()
 
@@ -45,8 +40,6 @@ def check_remote(repo_url, report):
         exit()
     branch_name = branches[int(choice)]
     repository_manager.change_branch(branch_name)
-
-    console.clear()
 
     # find the docker files in the repository
     docker_files = repository_manager.find_docker_files()
@@ -85,11 +78,11 @@ def check_remote(repo_url, report):
         console.print("Unable to determine the poetry version from the Dockerfile.", style="red1")
         poetry_version = click.prompt("Enter a valid Poetry version to use e.g. 1.8.2", type=str)
 
-    console.print(information_table(repository_manager, docker_image, poetry_version))
+    console.print(information_table(repository_manager, docker_image, poetry_version), new_line_start=True)
 
     process = click.confirm("Do you want to continue with the above details?", default=True)
 
-    console.clear()
+    # console.clear()
 
     if not process:
         console.print("Exiting ...", style="red1")
@@ -106,8 +99,9 @@ def check_remote(repo_url, report):
     docker.generate_bash_command()
 
     console.print(
-        f"The command below will be used to run a docker container:\n\n{docker.run_cmd} '{docker.bash_cmd}'\n",
+        f"Build & run a docker container with the following command:\n\n{docker.run_cmd}\n'{docker.bash_cmd}'\n",
         style="bright_white",
+        new_line_start=True,
     )
     process = click.confirm("Do you want to continue with the above command?", default=True)
 
@@ -117,21 +111,10 @@ def check_remote(repo_url, report):
         console.print("Exiting ...", style="red1")
         exit()
 
-    console.print("Running the docker image. This may take some time ...", style="yellow1")
+    console.print("Build & run the docker image. This may take some time ...", style="yellow1")
     docker.run()
 
     console.clear()
-
-    console.print(information_table(repository_manager, docker_image, poetry_version))
-    # table = Table(title="Repository Information", box=box.MARKDOWN, show_lines=True)
-    # table.add_column("", style="bright_white")
-    # table.add_column("Details", style="bright_white")
-    # table.add_row("Repository URL", repository_manager.repo_url)
-    # table.add_row("Branch Name", repository_manager.get_branch())
-    # table.add_row("Dockerfile Path", repository_manager.dockerfile_path)
-    # table.add_row("Poetry Version", poetry_version)
-    # table.add_row("Docker Image", docker_image)
-    # console.print(table)
 
     if report:
         reporter.add_info_data(
@@ -159,16 +142,10 @@ def check_remote(repo_url, report):
 
     messages = []
 
-    production_packages = []
-    development_packages = []
-
     # production dependencies
-    console.print("")
-    table = Table(title="Production Dependencies", box=box.MARKDOWN, show_lines=True)
-    table.add_column("Package", style="bright_white")
-    table.add_column("Installed Version", style="bright_white")
-    table.add_column("Latest Version", style="bright_white")
-    table.add_column("Status", style="bright_white")
+    table = dependency_table_header()
+
+    production_packages = []
 
     for dependency in dependencies:
         c = client.get_package(dependency)
@@ -215,17 +192,13 @@ def check_remote(repo_url, report):
                 }
             )
 
-    console.print(table)
+    console.print(table, new_line_start=True)
 
     # development dependencies
-    console.print("\n")
-    table = Table(title="Development Dependencies", box=box.MARKDOWN, show_lines=True)
-    table.add_column("Package", style="bright_white")
-    table.add_column("Installed Version", style="bright_white")
-    table.add_column("Latest Version", style="bright_white")
-    table.add_column("Status", style="bright_white")
+    table = dependency_table_header()
 
-    # development dependencies
+    development_packages = []
+
     for dependency in dev_dependencies:
         c = client.get_package(dependency)
         if isinstance(c, int):
@@ -268,14 +241,25 @@ def check_remote(repo_url, report):
                 }
             )
 
-    console.print(table)
+    console.print(table, new_line_start=True)
+
+    console.print(information_table(repository_manager, docker_image, poetry_version))
 
     if report:
         reporter.write_report()
 
 
+def dependency_table_header():
+    table = Table(title="Production Dependencies", box=box.MARKDOWN, show_lines=True)
+    table.add_column("Package", style="bright_white")
+    table.add_column("Installed Version", style="bright_white")
+    table.add_column("Latest Version", style="bright_white")
+    table.add_column("Status", style="bright_white")
+    return table
+
+
 def information_table(repository_manager, docker_image, poetry_version):
-    table = Table(title="Repository Information", box=box.MARKDOWN, show_lines=True)
+    table = Table(title="Branch Information", box=box.MARKDOWN, show_lines=True)
     table.add_column("", style="bright_white")
     table.add_column("Details", style="bright_white")
     table.add_row("Repository URL", repository_manager.repo_url)
