@@ -3,7 +3,6 @@ import pathlib
 import click
 from rich.columns import Columns
 from rich.console import Console
-from src.client import PyPiClient
 from src.helpers import (
     dependency_table_header,
     get_branch_data,
@@ -24,8 +23,6 @@ def check_remote(repo_url, report):
 
     rich_console.clear()
     rich_console.print("Fetching the repository...", style="cyan1")
-
-    client = PyPiClient()
 
     # clone the repository
     repository_manager = RepositoryManager(repo_url)
@@ -126,7 +123,7 @@ def check_remote(repo_url, report):
     dependencies = sorted(toml.dependencies.keys())
     table = dependency_table_header(title="Production Dependencies")
 
-    production_packages = get_packages(client, dependencies, messages)
+    production_packages = get_packages(dependencies, messages)
 
     for package in production_packages:
         name, latest_version, frozen_version, status, style = package_table_row(frozen, package)
@@ -149,7 +146,7 @@ def check_remote(repo_url, report):
     dev_dependencies = sorted(toml.dev_dependencies.keys())
     table = dependency_table_header(title="Development Dependencies")
 
-    development_packages = get_packages(client, dev_dependencies, messages)
+    development_packages = get_packages(dev_dependencies, messages)
 
     for package in development_packages:
         name, latest_version, frozen_version, status, style = package_table_row(frozen, package)

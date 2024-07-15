@@ -1,5 +1,6 @@
 from rich import box
 from rich.table import Table
+from src.client import PyPiClient
 from src.managers.package import Package
 
 
@@ -28,7 +29,8 @@ def package_table_row(frozen, package):
     return name, latest_version, frozen_version, status, style
 
 
-def get_packages(client, dependencies, messages):
+def get_packages(dependencies, messages):
+    client = PyPiClient()
     packages = []
 
     for dependency in dependencies:
