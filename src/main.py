@@ -24,12 +24,17 @@ def remote(ctx: click.Context, repo_url: str):
 
 
 @cli.command()
-@click.option("--path", prompt="Path to the repository", help="The path to the repository to check.")
+@click.argument(
+    "path",
+    type=click.Path(
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        resolve_path=True,
+        path_type=pathlib.Path,
+    ),
+)
 @click.pass_context
-def local(ctx: click.Context, path: str):
+def local(ctx: click.Context, path: pathlib.Path):
     """Analyze the dependencies of a local repository"""
-    # check the path exists
-    if not pathlib.Path(path).exists():
-        click.echo("The path does not exist.")
-        exit()
     check_local(path, ctx.obj["report"])

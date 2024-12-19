@@ -10,6 +10,11 @@ e.g. your `pyproject.toml` file may have a version range specified, but it may n
 
 You could run poetry show [dependency] to get the installed version, then pop over to PyPi to check the latest version but if you have a lot of dependencies, this can be time-consuming, so let this tool do it for you.
 
+## Requirements
+
+- Python 3.11+
+- UV https://docs.astral.sh/uv/
+
 ## Installation
 
 Clone this repository and run the following commands in the root of the project:
@@ -17,9 +22,10 @@ Clone this repository and run the following commands in the root of the project:
 ## Usage
 
 ```bash
-poetry install
-poetry run check [-r] [local or remote]
+uv run check [-r] [local or remote]
 ```
+
+If you run `uv check` without any arguments, it will display the help text.
 
 Steps:
 
@@ -44,10 +50,6 @@ poetry run check local --help
 ## Limitations
 
 - Only works if the Dockerfile uses poetry to install dependencies
-
-## TODO
-
-- Add support for different dependency managers (requirements.txt, etc.)
 
 ## How it works
 

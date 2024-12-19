@@ -129,21 +129,4 @@ class RepositoryManagerLocal(RepositoryManagerBase):
         super().__init__()
 
         self.repo_url = "local"
-        self.repo_dir = self.get_absolute_path(path)
-
-    def get_absolute_path(self, path):
-        path_parts = path.strip("/").split("/")
-        parent_dirs_count = 0
-        dir_parts = []
-
-        for part in path_parts:
-            if part == "..":
-                parent_dirs_count += 1
-            else:
-                dir_parts.append(part)
-
-        cwd = pathlib.Path.cwd()
-        for _ in range(parent_dirs_count):
-            cwd = cwd.parent
-
-        return cwd.joinpath(*dir_parts)
+        self.repo_dir = path
