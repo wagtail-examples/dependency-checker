@@ -110,7 +110,11 @@ def check_local(path: str, report: bool) -> None:
 
     # process the requirements-frozen.txt file as a FrozenParser object
     # it's used to lookup the package name and version installed in the docker image
-    frozen = TextParser(pathlib.Path(repository_manager.get_repo_dir / "requirements-frozen.txt").absolute())
+    requirements_file = pathlib.Path(repository_manager.get_repo_dir / "requirements-frozen.txt").absolute()
+    frozen = TextParser(requirements_file)
+
+    # delete the requirements-frozen.txt file
+    requirements_file.unlink()
 
     # process the pyproject.toml file as a TomlParser object
     # it's used to lookup the package name and version specified in the pyproject.toml file

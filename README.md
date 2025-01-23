@@ -10,16 +10,39 @@ e.g. your `pyproject.toml` file may have a version range specified, but it may n
 
 You could run poetry show [dependency] to get the installed version, then pop over to PyPi to check the latest version but if you have a lot of dependencies, this can be time-consuming, so let this tool do it for you.
 
+## Requirements
+
+- Python 3.11+
+- UV https://docs.astral.sh/uv/
+
 ## Installation
 
 Clone this repository and run the following commands in the root of the project:
 
+## Activate the virtual environment
+
+This isn't strictly necessary but it is recommended to allow command completion for folder paths when checking a local repository.
+
+```
+uv venv
+source .venv/bin/activate
+```
+
 ## Usage
 
-```bash
-poetry install
-poetry run check [-r] [local or remote]
+Without activating the virtual environment:
+
 ```
+uv run check [-r] [local or remote]
+```
+
+With the virtual environment activated:
+
+```
+check [-r] [local or remote]
+```
+
+If you run `uv check` without any arguments, it will display the help docs.
 
 Steps:
 
@@ -29,25 +52,23 @@ Steps:
 
 ## Options
 
-- `-r` - Output a printable report to a file (report.html)
-- `local` - Check a local repository (a folder relative to the directory this script is run from)
-- `remote` - Check a remote repository
+`-r` - Output a printable report to a file (report.html) View with `open report.html`
+
+`local` - Check a local repository (a folder relative to the directory this script is run from)
+
+`remote` - Check a remote repository
 
 Command help is available:
 
-```bash
-poetry run check --help
-poetry run check remote --help
-poetry run check local --help
+```
+uv run check --help
+uv run check remote --help
+uv run check local --help
 ```
 
 ## Limitations
 
 - Only works if the Dockerfile uses poetry to install dependencies
-
-## TODO
-
-- Add support for different dependency managers (requirements.txt, etc.)
 
 ## How it works
 

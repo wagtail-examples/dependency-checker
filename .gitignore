@@ -163,3 +163,4 @@ requirements-frozen.txt
 !/tests/fixtures/files/requirements-frozen.txt
 /docker-run-*
 /report.html
+.DS_Store
