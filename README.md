@@ -19,13 +19,30 @@ You could run poetry show [dependency] to get the installed version, then pop ov
 
 Clone this repository and run the following commands in the root of the project:
 
+## Activate the virtual environment
+
+This isn't strictly necessary but it is recommended to allow command completion for folder paths when checking a local repository.
+
+```
+uv venv
+source .venv/bin/activate
+```
+
 ## Usage
 
-```bash
+Without activating the virtual environment:
+
+```
 uv run check [-r] [local or remote]
 ```
 
-If you run `uv check` without any arguments, it will display the help text.
+With the virtual environment activated:
+
+```
+check [-r] [local or remote]
+```
+
+If you run `uv check` without any arguments, it will display the help docs.
 
 Steps:
 
@@ -35,16 +52,18 @@ Steps:
 
 ## Options
 
-- `-r` - Output a printable report to a file (report.html)
-- `local` - Check a local repository (a folder relative to the directory this script is run from)
-- `remote` - Check a remote repository
+`-r` - Output a printable report to a file (report.html) View with `open report.html`
+
+`local` - Check a local repository (a folder relative to the directory this script is run from)
+
+`remote` - Check a remote repository
 
 Command help is available:
 
-```bash
-poetry run check --help
-poetry run check remote --help
-poetry run check local --help
+```
+uv run check --help
+uv run check remote --help
+uv run check local --help
 ```
 
 ## Limitations
