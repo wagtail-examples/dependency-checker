@@ -31,8 +31,19 @@ class DockerManager:
         cmd = [
             "pip install -U pip",
             f"pip install poetry=={self.poetry_version}",
-            "poetry export -f requirements.txt -o requirements-frozen.txt --without-hashes --dev",
         ]
+
+        # Poetry 2.x requires the export plugin to be installed separately
+        poetry_major_version = int(self.poetry_version.split(".")[0])
+        if poetry_major_version >= 2:
+            cmd.append("pip install poetry-plugin-export")
+            # Poetry 2.x uses --with dev instead of --dev
+            export_cmd = "poetry export -f requirements.txt -o requirements-frozen.txt --without-hashes --with dev"
+        else:
+            # Poetry 1.x uses --dev
+            export_cmd = "poetry export -f requirements.txt -o requirements-frozen.txt --without-hashes --dev"
+
+        cmd.append(export_cmd)
         self.bash_cmd = " && ".join(cmd)
 
     def run(self, run_cmd=None, bash_cmd=None):
